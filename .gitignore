@@ -40,6 +40,8 @@ build/Release
 # Dependency directories
 node_modules/
 jspm_packages/
+images/
+.github/workflows/
 
 # TypeScript v1 declaration files
 typings/
