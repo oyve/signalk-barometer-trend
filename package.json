@@ -1,6 +1,6 @@
 {
   "name": "signalk-barometer-trend",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Get the trend of a barometer over time",
   "main": "index.js",
   "scripts": {
@@ -24,6 +24,10 @@
     "url": "https://github.com/oyve/signalk-barometer-trend/issues"
   },
   "homepage": "https://github.com/oyve/signalk-barometer-trend#readme",
+  "dependencies": {
+    "barometer-trend": "^1.0.3",
+    "mocha": "^8.2.1"
+  },
   "devDependencies": {
     "barometer-trend": "^1.0.3",
     "mocha": "^8.2.1"
