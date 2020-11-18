@@ -2,7 +2,7 @@
 Calculate the pressure trend of a barometer. Are there foul weather on the way?
 
 ## Install & Use
-Note: To use this plugin you need a barometer connected to SignalK, i.e. the [bme680](https://www.google.com/search?client=firefox-b-d&q=bme680), outputting the sentence ''environment.outside.pressure'.
+Note: To use this plugin you need a barometer connected to SignalK, i.e. the [bme680](https://www.google.com/search?client=firefox-b-d&q=bme680), outputting the sentence `'environment.outside.pressure'`.
 
 Install the plugin through the SignalK plugin interface.\
 After installation you may want to 'Activate' it through the SignalK Plugin Config interface.
@@ -13,7 +13,7 @@ The plugin will output two new SignalK values:
 'environment.outside.pressure.trend.text'
 ```
 
-From the `pressure.trend` value you could for example setup an alarm (using another plugin) if the trend is changing fast, possibly indicating foul weather.
+From the `environment.outside.pressure.trend` value you could for example setup an alarm (using another plugin) if the trend is changing fast, possibly indicating foul weather.
 
 PS: It might take a couple of minutes before the plugin show any data, as it need to collect pressure readings to calculate a trend. The plugin is setup to read the pressure every 1 minute. Pressure readings older than three hours will be discarded.
 
