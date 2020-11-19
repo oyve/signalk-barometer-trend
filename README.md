@@ -28,6 +28,17 @@ This is actual data while developing the plugin. A tropical wave, OT-48, was mov
 The above GIF-animation is actual radar image from [Meteo France](http://www.meteo.fr/temps/domtom/antilles/pack-public/animation/anim_radar_mart_mf_com.html) at the time.\
 The above satelitte photo animation is from [NOAA](https://www.nhc.noaa.gov/satellite.php).
 
+## Possible values are
+
+FALLING: | RISING:
+------------ | -------------
+FALLING.STEADY | RISING.STEADY
+FALLING.SLOW | RISING.SLOW
+FALLING.CHANGING | RISING.CHANGING
+FALLING.QUICKLY | RISING.QUICKLY
+FALLING.RAPIDLY | RISING.RAPIDLY
+
+
 ## Contribute
 Please feel free to contribute to this plugin by creating a *Pull Request* including test code.
 
