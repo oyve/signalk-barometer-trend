@@ -28,16 +28,17 @@ This is actual data while developing the plugin. A tropical wave, OT-48, was mov
 The above GIF-animation is actual radar image from [Meteo France](http://www.meteo.fr/temps/domtom/antilles/pack-public/animation/anim_radar_mart_mf_com.html) at the time.\
 The above satelitte photo animation is from [NOAA](https://www.nhc.noaa.gov/satellite.php).
 
-## Possible values are
+## Possible values are (severity in parentheses)
 
 FALLING: | RISING:
 ------------ | -------------
-FALLING.STEADY | RISING.STEADY
-FALLING.SLOW | RISING.SLOW
-FALLING.CHANGING | RISING.CHANGING
-FALLING.QUICKLY | RISING.QUICKLY
-FALLING.RAPIDLY | RISING.RAPIDLY
+FALLING.STEADY (0) | RISING.STEADY (0)
+FALLING.SLOW (-1) | RISING.SLOW (1)
+FALLING.CHANGING (-2) | RISING.CHANGING (2)
+FALLING.QUICKLY (-3) | RISING.QUICKLY (3)
+FALLING.RAPIDLY (-4) | RISING.RAPIDLY (4)
 
+Based on the severity you could set an alarm, i.e. with the [Simple Notification](https://github.com/sbender9/signalk-simple-notifications)-plugin.
 
 ## Contribute
 Please feel free to contribute to this plugin by creating a *Pull Request* including test code.
