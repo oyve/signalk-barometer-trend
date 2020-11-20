@@ -32,11 +32,11 @@ The above satelitte photo animation is from [NOAA](https://www.nhc.noaa.gov/sate
 
 FALLING: | RISING:
 ------------ | -------------
-FALLING.STEADY (0) | RISING.STEADY (0)
-FALLING.SLOW (-1) | RISING.SLOW (1)
-FALLING.CHANGING (-2) | RISING.CHANGING (2)
-FALLING.QUICKLY (-3) | RISING.QUICKLY (3)
-FALLING.RAPIDLY (-4) | RISING.RAPIDLY (4)
+(0) FALLING.STEADY | (0) RISING.STEADY
+(-1) FALLING.SLOW | (1) RISING.SLOW
+(-2) FALLING.CHANGING | (2) RISING.CHANGING
+(-3) FALLING.QUICKLY | (3) RISING.QUICKLY
+(-4) FALLING.RAPIDLY | (4) RISING.RAPIDLY
 
 Based on the severity you could set an alarm, i.e. with the [Simple Notification](https://github.com/sbender9/signalk-simple-notifications)-plugin.
 
