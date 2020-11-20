@@ -19,13 +19,15 @@ describe("Barometer Tests", function () {
         it("Pressure should equal", function () {
             //arrange
             barometer.clear();
-            let expected = "RISING.STEADY";
+            const expectedTendency = "RISING";
+            const expectedTrend = "STEADY";
             barometer.onDeltasUpdate(createDeltaMock(1015));
             barometer.onDeltasUpdate(createDeltaMock(1016));
             //act
             let actual = barometer.onDeltasUpdate(createDeltaMock(1017));
             //assert
-            assert.strictEqual(actual.find((f) => f.path === barometer.OUTPUT_PATHS.PRESSURE_TREND).value, expected);
+            assert.strictEqual(actual.find((f) => f.path === barometer.OUTPUT_PATHS.PRESSURE_TREND).value.tendency, expectedTendency);
+            assert.strictEqual(actual.find((f) => f.path === barometer.OUTPUT_PATHS.PRESSURE_TREND).value.trend, expectedTrend);
         });
 
         describe("no pressure added", function () {
