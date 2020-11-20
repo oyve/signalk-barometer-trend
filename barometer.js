@@ -1,7 +1,7 @@
 'use strict'
 const barometer = require('barometer-trend');
 
-const ENVIRONMENT_OUTSIDE_PRESSURE = 'environment.outside.pressure'
+const ENVIRONMENT_OUTSIDE_PRESSURE = 'environment.outside.pressure';
 const ONE_MINUTE_MILLISECONDS = 60 * 1000;
 
 const SUBSCRIPTIONS = [
@@ -9,8 +9,7 @@ const SUBSCRIPTIONS = [
 ];
 
 const OUTPUT_PATHS = {
-    "PRESSURE_TREND": "environment.outside.pressure.trend",
-    "PRESSURE_TREND_TEXT": "environment.outside.pressure.trend.text",
+    "PRESSURE_TREND": "environment.outside.pressure.trend"
 }
 
 /**
@@ -52,10 +51,9 @@ function onPressureUpdated(value) {
     let trend = barometer.getTrend();
 
     if (trend != null) {
-        let deltaPressureTrend = buildDeltaUpdate(OUTPUT_PATHS.PRESSURE_TREND, trend.tendency + "." + trend.trend);
-        let deltaPressurePrediction = buildDeltaUpdate(OUTPUT_PATHS.PRESSURE_TREND_TEXT, trend.prediction);
+        let deltaPressureTrend = buildDeltaUpdate(OUTPUT_PATHS.PRESSURE_TREND, trend);
 
-        return [deltaPressureTrend, deltaPressurePrediction];
+        return [deltaPressureTrend];
     }
 
     return null;
@@ -68,8 +66,7 @@ function buildDeltaUpdate(path, value) {
     }
 }
 
-function clear()
-{
+function clear() {
     barometer.clear();
 }
 
