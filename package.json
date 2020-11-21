@@ -25,7 +25,9 @@
     "url": "https://github.com/oyve/signalk-barometer-trend/issues"
   },
   "homepage": "https://github.com/oyve/signalk-barometer-trend#readme",
-  "dependencies": {},
+  "dependencies": {
+    "barometer-trend": "^1.0.5"
+  },
   "devDependencies": {
     "barometer-trend": "^1.0.5",
     "mocha": "^8.2.1"
