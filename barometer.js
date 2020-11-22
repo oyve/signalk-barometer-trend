@@ -8,8 +8,13 @@ const SUBSCRIPTIONS = [
     { path: ENVIRONMENT_OUTSIDE_PRESSURE, period: ONE_MINUTE_MILLISECONDS }
 ];
 
+const pathPrefix = "environment.outside.pressure.trend.";
+
 const OUTPUT_PATHS = {
-    "PRESSURE_TREND": "environment.outside.pressure.trend"
+    "PRESSURE_TENDENCY": pathPrefix + "tendency",
+    "PRESSURE_TREND": pathPrefix + "trend",
+    "PRESSURE_INDICATOR": pathPrefix + "indicator",
+    "PRESSURE_SEVERITY": pathPrefix + "severity"
 }
 
 /**
@@ -51,9 +56,12 @@ function onPressureUpdated(value) {
     let trend = barometer.getTrend();
 
     if (trend != null) {
-        let deltaPressureTrend = buildDeltaUpdate(OUTPUT_PATHS.PRESSURE_TREND, trend);
-
-        return [deltaPressureTrend];
+        return [
+            buildDeltaUpdate(OUTPUT_PATHS.PRESSURE_TENDENCY, trend.tendency),
+            buildDeltaUpdate(OUTPUT_PATHS.PRESSURE_TREND, trend.trend),
+            buildDeltaUpdate(OUTPUT_PATHS.PRESSURE_INDICATOR, trend.indicator),
+            buildDeltaUpdate(OUTPUT_PATHS.PRESSURE_SEVERITY, trend.severity)
+        ];
     }
 
     return null;
@@ -74,5 +82,6 @@ module.exports = {
     SUBSCRIPTIONS,
     OUTPUT_PATHS,
     onDeltasUpdate,
-    clear
+    clear,
+    buildDeltaUpdate
 }

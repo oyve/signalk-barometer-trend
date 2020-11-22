@@ -23,7 +23,15 @@ module.exports = function (app) {
             subscriptionError => {
                 app.error('Error:' + subscriptionError);
             },
-            delta => sendDelta(barometer.onDeltasUpdate(delta)))
+            delta => sendDelta(barometer.onDeltasUpdate(delta))
+        );
+
+        sendDelta([
+            barometer.buildDeltaUpdate(barometer.OUTPUT_PATHS.PRESSURE_TENDENCY, 'Waiting...'),
+            barometer.buildDeltaUpdate(barometer.OUTPUT_PATHS.PRESSURE_TREND, 'Waiting...'),
+            barometer.buildDeltaUpdate(barometer.OUTPUT_PATHS.PRESSURE_INDICATOR, 'Waiting...'),
+            barometer.buildDeltaUpdate(barometer.OUTPUT_PATHS.PRESSURE_SEVERITY, 0),
+        ]);
     };
 
     plugin.stop = function () {
