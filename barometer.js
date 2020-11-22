@@ -80,10 +80,10 @@ function clear() {
 
 function preLoad() {
     return [
-        barometer.buildDeltaUpdate(barometer.OUTPUT_PATHS.PRESSURE_TENDENCY, 'Waiting...'),
-        barometer.buildDeltaUpdate(barometer.OUTPUT_PATHS.PRESSURE_TREND, 'Waiting...'),
-        barometer.buildDeltaUpdate(barometer.OUTPUT_PATHS.PRESSURE_INDICATOR, 'Waiting...'),
-        barometer.buildDeltaUpdate(barometer.OUTPUT_PATHS.PRESSURE_SEVERITY, 0),
+        buildDeltaUpdate(OUTPUT_PATHS.PRESSURE_TENDENCY, 'Waiting...'),
+        buildDeltaUpdate(OUTPUT_PATHS.PRESSURE_TREND, 'Waiting...'),
+        buildDeltaUpdate(OUTPUT_PATHS.PRESSURE_INDICATOR, 'Waiting...'),
+        buildDeltaUpdate(OUTPUT_PATHS.PRESSURE_SEVERITY, 0),
     ];
 }
 

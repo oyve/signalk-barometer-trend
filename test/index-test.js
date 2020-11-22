@@ -13,9 +13,7 @@ describe("Barometer Tests", function () {
             //assert
             assert.strictEqual(actual.find((f) => f.path === expected).path, expected);
         });
-    });
 
-    describe("onDeltasUpdated", function () {
         it("Pressure should equal", function () {
             //arrange
             barometer.clear();
@@ -31,25 +29,32 @@ describe("Barometer Tests", function () {
             assert.strictEqual(actual.find((f) => f.path === barometer.OUTPUT_PATHS.PRESSURE_SEVERITY).value, 0);
         });
 
-        describe("no pressure added", function () {
-
-            it("it should throw an exception", function () {
-                //arrange
-                barometer.clear();
-                //act
-                //assert
-                assert.throws(() => { barometer.onDeltasUpdate(null) }, Error, "Deltas cannot be null");
-            });
+        it("it should throw an exception", function () {
+            //arrange
+            barometer.clear();
+            //act
+            //assert
+            assert.throws(() => { barometer.onDeltasUpdate(null) }, Error, "Deltas cannot be null");
         });
 
-        describe("fake a duplicate reading", function () {
+
+        it("it should be ok", function () {
+            //arrange
+            //act
+            barometer.clear();
+            let actual = barometer.onDeltasUpdate(createDeltaMock(300));
+            //assert
+            assert.notStrictEqual(actual, null);
+        });
+
+
+        describe("preLoad", function () {
             it("it should be ok", function () {
                 //arrange
                 //act
-                barometer.clear();
-                let actual = barometer.onDeltasUpdate(createDeltaMock(300));
+                barometer.preLoad();
                 //assert
-                assert.notStrictEqual(actual, null);
+                assert.ok(true, "it's ok");
             });
         });
     });
