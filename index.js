@@ -26,12 +26,7 @@ module.exports = function (app) {
             delta => sendDelta(barometer.onDeltasUpdate(delta))
         );
 
-        sendDelta([
-            barometer.buildDeltaUpdate(barometer.OUTPUT_PATHS.PRESSURE_TENDENCY, 'Waiting...'),
-            barometer.buildDeltaUpdate(barometer.OUTPUT_PATHS.PRESSURE_TREND, 'Waiting...'),
-            barometer.buildDeltaUpdate(barometer.OUTPUT_PATHS.PRESSURE_INDICATOR, 'Waiting...'),
-            barometer.buildDeltaUpdate(barometer.OUTPUT_PATHS.PRESSURE_SEVERITY, 0),
-        ]);
+        sendDelta(barometer.preLoad());
     };
 
     plugin.stop = function () {

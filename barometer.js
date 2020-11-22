@@ -78,10 +78,19 @@ function clear() {
     barometer.clear();
 }
 
+function preLoad() {
+    return [
+        barometer.buildDeltaUpdate(barometer.OUTPUT_PATHS.PRESSURE_TENDENCY, 'Waiting...'),
+        barometer.buildDeltaUpdate(barometer.OUTPUT_PATHS.PRESSURE_TREND, 'Waiting...'),
+        barometer.buildDeltaUpdate(barometer.OUTPUT_PATHS.PRESSURE_INDICATOR, 'Waiting...'),
+        barometer.buildDeltaUpdate(barometer.OUTPUT_PATHS.PRESSURE_SEVERITY, 0),
+    ];
+}
+
 module.exports = {
     SUBSCRIPTIONS,
     OUTPUT_PATHS,
     onDeltasUpdate,
     clear,
-    buildDeltaUpdate
+    preLoad
 }
