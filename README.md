@@ -7,15 +7,20 @@ Note: To use this plugin you need a barometer connected to SignalK, i.e. the [bm
 Install the plugin through the SignalK plugin interface.\
 After installation you may want to 'Activate' it through the SignalK Plugin Config interface.
 
-The plugin will output two new SignalK values:
+The plugin will output several new SignalK values, such as:
 ```
-'environment.outside.pressure.trend'
-'environment.outside.pressure.trend.text'
+'environment.outside.pressure.trend.tendency'
+'environment.outside.pressure.trend.severity'
+'environment.outside.pressure.prediction.quadrant'
 ```
 
-From the `environment.outside.pressure.trend` value you could for example setup an alarm (using another plugin) if the trend is changing fast, possibly indicating foul weather.
+Based on the severity value you could set an alarm, i.e. with the [Simple Notification](https://github.com/sbender9/signalk-simple-notifications)-plugin (see table below).
 
 PS: It might take a couple of minutes before the plugin show any data, as it need to collect pressure readings to calculate a trend. The plugin is setup to read the pressure every 1 minute. Pressure readings older than three hours will be discarded.
+
+## More details
+
+For more details please visit [github.com/oyve/barometer-trend](github.com/oyve/barometer-trend) library.
 
 ## A real world example
 This is actual data while developing the plugin. A tropical wave, OT-48, was moving through the Caribbean creating local heavy rainfall and stormy wind in Guadeloupe.
@@ -38,7 +43,7 @@ FALLING: | RISING:
 (-3) FALLING.QUICKLY | (3) RISING.QUICKLY
 (-4) FALLING.RAPIDLY | (4) RISING.RAPIDLY
 
-Based on the severity you could set an alarm, i.e. with the [Simple Notification](https://github.com/sbender9/signalk-simple-notifications)-plugin.
+Based on the severity value you could set an alarm, i.e. with the [Simple Notification](https://github.com/sbender9/signalk-simple-notifications)-plugin.
 
 ## Contribute
 Please feel free to contribute to this plugin by creating a *Pull Request* including test code.
