@@ -19,14 +19,14 @@ describe("Barometer Tests", function () {
             barometer.clear();
             const expectedTendency = "RISING";
             const expectedTrend = "STEADY";
-            barometer.onDeltasUpdate(createDeltaMock(1015));
-            barometer.onDeltasUpdate(createDeltaMock(1016));
+            barometer.onDeltasUpdate(createDeltaMockPressure(1015));
+            barometer.onDeltasUpdate(createDeltaMockPressure(1016));
             //act
-            let actual = barometer.onDeltasUpdate(createDeltaMock(1017));
+            let actual = barometer.onDeltasUpdate(createDeltaMockPressure(1017));
             //assert
-            assert.strictEqual(actual.find((f) => f.path === barometer.OUTPUT_PATHS.PRESSURE_TENDENCY).value, expectedTendency);
-            assert.strictEqual(actual.find((f) => f.path === barometer.OUTPUT_PATHS.PRESSURE_TREND).value, expectedTrend);
-            assert.strictEqual(actual.find((f) => f.path === barometer.OUTPUT_PATHS.PRESSURE_SEVERITY).value, 0);
+            assert.strictEqual(actual.find((f) => f.path === barometer.OUTPUT_PATHS.TREND_TENDENCY).value, expectedTendency);
+            assert.strictEqual(actual.find((f) => f.path === barometer.OUTPUT_PATHS.TREND_TREND).value, expectedTrend);
+            assert.strictEqual(actual.find((f) => f.path === barometer.OUTPUT_PATHS.TREND_SEVERITY).value, 0);
         });
 
         it("it should throw an exception", function () {
@@ -42,35 +42,169 @@ describe("Barometer Tests", function () {
             //arrange
             //act
             barometer.clear();
-            let actual = barometer.onDeltasUpdate(createDeltaMock(300));
+            let actual = barometer.onDeltasUpdate(createDeltaMockPressure(300));
             //assert
             assert.notStrictEqual(actual, null);
         });
 
-
         describe("preLoad", function () {
-            it("it should be ok", function () {
+            it("it should be waiting", function () {
                 //arrange
                 //act
-                barometer.preLoad();
+                let actual = barometer.preLoad();
                 //assert
-                assert.ok(true, "it's ok");
+                assert.strictEqual(actual.find((f) => f.path === barometer.OUTPUT_PATHS.TREND_TENDENCY).value, "Waiting..");
             });
+        });
+
+        it("Subscription should equal", function () {
+            //arrange
+            barometer.clear();
+            let expected = 'environment.outside.pressure';
+            //act
+            let actual = barometer.SUBSCRIPTIONS;
+            //assert
+            assert.strictEqual(actual.find((f) => f.path === expected).path, expected);
+        });
+
+        it("Has position within one minute", function () {
+            //arrange
+            barometer.clear();
+            barometer.onDeltasUpdate(createDeltaMockPosition(mockPositionNorthernHemisphere()));
+
+            barometer.onDeltasUpdate(createDeltaMockPressure(1015));
+            barometer.onDeltasUpdate(createDeltaMockPressure(1016));
+            barometer.onDeltasUpdate(createDeltaMockPressure(1017));
+            //act
+            let actual = barometer.hasPositionWithinOneMinute();
+            //assert
+            assert.strictEqual(actual, true);
+        });
+
+        it("Has no position defaults to northern hemisphere", function () {
+            //arrange
+            barometer.clear();
+            barometer.onDeltasUpdate(createDeltaMockPressure(1015));
+            barometer.onDeltasUpdate(createDeltaMockPressure(1016));
+            barometer.onDeltasUpdate(createDeltaMockPressure(1017));
+            //act
+            let actual = barometer.isNortherHemisphere();
+            //assert
+            assert.strictEqual(actual, true);
+        });
+
+        it("Is northern hemisphere", function () {
+            //arrange
+            barometer.clear();
+            barometer.onDeltasUpdate(createDeltaMockPosition(mockPositionNorthernHemisphere()));
+
+            barometer.onDeltasUpdate(createDeltaMockPressure(1015));
+            barometer.onDeltasUpdate(createDeltaMockPressure(1016));
+            barometer.onDeltasUpdate(createDeltaMockPressure(1017));
+            //act
+            let actual = barometer.isNortherHemisphere();
+            //assert
+            assert.strictEqual(actual, true);
+        });
+
+        it("Is southern hemisphere", function () {
+            //arrange
+            barometer.clear();
+            barometer.onDeltasUpdate(createDeltaMockPosition(mockPositionSouthernHemisphere()));
+
+            barometer.onDeltasUpdate(createDeltaMockPressure(1015));
+            barometer.onDeltasUpdate(createDeltaMockPressure(1016));
+            barometer.onDeltasUpdate(createDeltaMockPressure(1017));
+            //act
+            let actual = barometer.isNortherHemisphere();
+            //assert
+            assert.strictEqual(actual, false);
+        });
+
+        it("Has TWD within one minute", function () {
+            //arrange
+            barometer.clear();
+            barometer.onDeltasUpdate(createDeltaMockWindDirection(225));
+
+            barometer.onDeltasUpdate(createDeltaMockPressure(1015));
+            barometer.onDeltasUpdate(createDeltaMockPressure(1016));
+            barometer.onDeltasUpdate(createDeltaMockPressure(1017));
+            //act
+            let actual = barometer.hasTWDWithinOneMinute();
+            //assert
+            assert.strictEqual(actual, true);
+        });
+
+        it("Has not TWD within one minute", function () {
+            //arrange
+            barometer.clear();
+
+            barometer.onDeltasUpdate(createDeltaMockPressure(1015));
+            barometer.onDeltasUpdate(createDeltaMockPressure(1016));
+            barometer.onDeltasUpdate(createDeltaMockPressure(1017));
+            //act
+            let actual = barometer.hasTWDWithinOneMinute();
+            //assert
+            assert.strictEqual(actual, false);
         });
     });
 });
 
-function createDeltaMock(pressure) {
+function createDeltaMockPressure(value) {
     return {
         updates: [
             {
                 values: [
                     {
                         path: 'environment.outside.pressure',
-                        value: pressure
+                        value: value
                     }
                 ]
             }
         ]
     }
+}
+
+function createDeltaMockWindDirection(value) {
+    return {
+        updates: [
+            {
+                values: [
+                    {
+                        path: 'environment.wind.directionTrue',
+                        value: value
+                    }
+                ]
+            }
+        ]
+    }
+}
+
+function createDeltaMockPosition(position) {
+    return {
+        updates: [
+            {
+                values: [
+                    {
+                        path: 'navigation.position',
+                        value: position
+                    }
+                ]
+            }
+        ]
+    }
+}
+
+function mockPositionNorthernHemisphere() {
+    return {
+        "longitude": -61.59,
+        "latitude": 15.84
+      }
+}
+
+function mockPositionSouthernHemisphere() {
+    return {
+        "longitude": -61.59,
+        "latitude": -15.84
+      }
 }
