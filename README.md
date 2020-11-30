@@ -23,6 +23,8 @@ If `'environment.outside.temperature'` and `'navigation.gnss.antennaAltitude'` (
 
 PS: It might take a couple of minutes before the plugin show any data, as it need to collect pressure readings to calculate a trend. The plugin is setup to read the pressure every 1 minute. Pressure readings older than three hours will be discarded.
 
+Note: If `'environment.outside.pressure.prediction.front.*` shows "N/A" - this means no front pressure pattern has been detected. It might take up to three hours to see anything, if at all.
+
 ## More details
 
 For more details please visit [github.com/oyve/barometer-trend](github.com/oyve/barometer-trend) library.
