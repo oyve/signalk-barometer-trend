@@ -23,6 +23,7 @@ PS: It might take a couple of minutes before the plugin show any data, as it nee
 For more details please visit [github.com/oyve/barometer-trend](github.com/oyve/barometer-trend) library.
 
 ![SignalK Data Browser](/images/signalk_barometer_trend.png)
+![SignalK Data Browser](/images/signalk_barometer_trend2.png)
 
 ## A real world example
 This is actual data while developing the plugin. A tropical wave, OT-48, was moving through the Caribbean creating local heavy rainfall and stormy wind in Guadeloupe.
