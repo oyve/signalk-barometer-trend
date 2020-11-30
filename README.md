@@ -1,3 +1,5 @@
+![Node.js Package](https://github.com/oyve/signalk-barometer-trend/workflows/Node.js%20Package/badge.svg)
+
 # signalk-barometer-trend
 Calculate the pressure trend of a barometer. Are there foul weather on the way?
 
@@ -20,6 +22,8 @@ If `'environment.outside.temperature'` and `'navigation.gnss.antennaAltitude'` (
 (Note: The plugin will not change the pressure readings you observe in SignalK - just internally for calculations.)
 
 PS: It might take a couple of minutes before the plugin show any data, as it need to collect pressure readings to calculate a trend. The plugin is setup to read the pressure every 1 minute. Pressure readings older than three hours will be discarded.
+
+Note: If `'environment.outside.pressure.prediction.front.*` shows "N/A" - this means no front pressure pattern has been detected. It might take up to three hours to see anything, if at all.
 
 ## More details
 
@@ -46,12 +50,11 @@ Based on the severity value you could set an alarm, i.e. with the [Simple Notifi
 Please feel free to contribute to this plugin by creating a *Pull Request* including test code.
 
 ## Disclaimer
-- See all disclaimers by reading the README at the GitHub project ['barometer-trend'](https://github.com/oyve/barometer-trend), also by the same author.
+- See all disclaimers by reading the README at the GitHub project ['barometer-trend'](https://github.com/oyve/barometer-trend), also by the same author, to understand the limitations of this plugin.
 
 ### External links
 * [GitHub: barometer-trend](https://github.com/oyve/barometer-trend)
 * [SignalK](http://signalk.org/)
-* Plugin inspired by: [How to use a barometer when sailing](https://www.jollyparrot.co.uk/blog/how-to-use-barometer-when-sailing)
 
 ## A real world example
 This is actual data while developing the plugin. A tropical wave, OT-48, was moving through the Caribbean creating local heavy rainfall and stormy wind in Guadeloupe.
