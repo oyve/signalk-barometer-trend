@@ -48,12 +48,11 @@ Based on the severity value you could set an alarm, i.e. with the [Simple Notifi
 Please feel free to contribute to this plugin by creating a *Pull Request* including test code.
 
 ## Disclaimer
-- See all disclaimers by reading the README at the GitHub project ['barometer-trend'](https://github.com/oyve/barometer-trend), also by the same author.
+- See all disclaimers by reading the README at the GitHub project ['barometer-trend'](https://github.com/oyve/barometer-trend), also by the same author, to understand the limitations of this plugin.
 
 ### External links
 * [GitHub: barometer-trend](https://github.com/oyve/barometer-trend)
 * [SignalK](http://signalk.org/)
-* Plugin inspired by: [How to use a barometer when sailing](https://www.jollyparrot.co.uk/blog/how-to-use-barometer-when-sailing)
 
 ## A real world example
 This is actual data while developing the plugin. A tropical wave, OT-48, was moving through the Caribbean creating local heavy rainfall and stormy wind in Guadeloupe.
