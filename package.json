@@ -1,7 +1,7 @@
 {
   "name": "signalk-barometer-trend",
-  "version": "2.0.1",
-  "description": "Get the pressure trend of a barometer over time",
+  "version": "2.1.1",
+  "description": "Get pressure trend and weather predictions from a barometer over time",
   "main": "index.js",
   "scripts": {
     "test": "mocha --recursive"
@@ -21,7 +21,8 @@
     "front",
     "hemisphere",
     "prediction",
-    "weather"
+    "weather",
+    "forecast"
   ],
   "author": "github.com/oyve",
   "license": "ISC",
@@ -30,10 +31,9 @@
   },
   "homepage": "https://github.com/oyve/signalk-barometer-trend#readme",
   "dependencies": {
-    "barometer-trend": "^2.0.1"
+    "barometer-trend": "^2.1.1"
   },
   "devDependencies": {
-    "barometer-trend": "^2.0.1",
     "mocha": "^8.2.1"
   }
 }

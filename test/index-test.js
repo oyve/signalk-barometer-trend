@@ -72,9 +72,9 @@ describe("Barometer Tests", function () {
             barometer.clear();
             barometer.onDeltasUpdate(createDeltaMockPosition(mockPositionNorthernHemisphere()));
 
-            barometer.onDeltasUpdate(createDeltaMockPressure(1015));
-            barometer.onDeltasUpdate(createDeltaMockPressure(1016));
-            barometer.onDeltasUpdate(createDeltaMockPressure(1017));
+            barometer.onDeltasUpdate(createDeltaMockPressure(101500));
+            barometer.onDeltasUpdate(createDeltaMockPressure(101600));
+            barometer.onDeltasUpdate(createDeltaMockPressure(101700));
             //act
             let actual = barometer.hasPositionWithinOneMinute();
             //assert
@@ -84,9 +84,9 @@ describe("Barometer Tests", function () {
         it("Has no position defaults to northern hemisphere", function () {
             //arrange
             barometer.clear();
-            barometer.onDeltasUpdate(createDeltaMockPressure(1015));
-            barometer.onDeltasUpdate(createDeltaMockPressure(1016));
-            barometer.onDeltasUpdate(createDeltaMockPressure(1017));
+            barometer.onDeltasUpdate(createDeltaMockPressure(101500));
+            barometer.onDeltasUpdate(createDeltaMockPressure(101600));
+            barometer.onDeltasUpdate(createDeltaMockPressure(101700));
             //act
             let actual = barometer.isNortherHemisphere();
             //assert
@@ -98,9 +98,9 @@ describe("Barometer Tests", function () {
             barometer.clear();
             barometer.onDeltasUpdate(createDeltaMockPosition(mockPositionNorthernHemisphere()));
 
-            barometer.onDeltasUpdate(createDeltaMockPressure(1015));
-            barometer.onDeltasUpdate(createDeltaMockPressure(1016));
-            barometer.onDeltasUpdate(createDeltaMockPressure(1017));
+            barometer.onDeltasUpdate(createDeltaMockPressure(101500));
+            barometer.onDeltasUpdate(createDeltaMockPressure(101600));
+            barometer.onDeltasUpdate(createDeltaMockPressure(101700));
             //act
             let actual = barometer.isNortherHemisphere();
             //assert
@@ -112,9 +112,9 @@ describe("Barometer Tests", function () {
             barometer.clear();
             barometer.onDeltasUpdate(createDeltaMockPosition(mockPositionSouthernHemisphere()));
 
-            barometer.onDeltasUpdate(createDeltaMockPressure(1015));
-            barometer.onDeltasUpdate(createDeltaMockPressure(1016));
-            barometer.onDeltasUpdate(createDeltaMockPressure(1017));
+            barometer.onDeltasUpdate(createDeltaMockPressure(101500));
+            barometer.onDeltasUpdate(createDeltaMockPressure(101600));
+            barometer.onDeltasUpdate(createDeltaMockPressure(101700));
             //act
             let actual = barometer.isNortherHemisphere();
             //assert
@@ -126,9 +126,9 @@ describe("Barometer Tests", function () {
             barometer.clear();
             barometer.onDeltasUpdate(createDeltaMockWindDirection(225));
 
-            barometer.onDeltasUpdate(createDeltaMockPressure(1015));
-            barometer.onDeltasUpdate(createDeltaMockPressure(1016));
-            barometer.onDeltasUpdate(createDeltaMockPressure(1017));
+            barometer.onDeltasUpdate(createDeltaMockPressure(101500));
+            barometer.onDeltasUpdate(createDeltaMockPressure(101600));
+            barometer.onDeltasUpdate(createDeltaMockPressure(101700));
             //act
             let actual = barometer.hasTWDWithinOneMinute();
             //assert
@@ -139,13 +139,43 @@ describe("Barometer Tests", function () {
             //arrange
             barometer.clear();
 
-            barometer.onDeltasUpdate(createDeltaMockPressure(1015));
-            barometer.onDeltasUpdate(createDeltaMockPressure(1016));
-            barometer.onDeltasUpdate(createDeltaMockPressure(1017));
+            barometer.onDeltasUpdate(createDeltaMockPressure(101500));
+            barometer.onDeltasUpdate(createDeltaMockPressure(101600));
+            barometer.onDeltasUpdate(createDeltaMockPressure(101700));
             //act
             let actual = barometer.hasTWDWithinOneMinute();
             //assert
             assert.strictEqual(actual, false);
+        });
+
+        it("Has temperature", function () {
+            //arrange
+            const expected = 30;
+            barometer.clear();
+            //act
+            barometer.onDeltasUpdate(createDeltaMockTemperature(expected));
+            //assert
+            assert.strictEqual(barometer.latest.temperature.value, expected);
+        });
+
+        it("Has altitude", function () {
+            //arrange
+            const expected = 100;
+            barometer.clear();
+            //act
+            barometer.onDeltasUpdate(createDeltaMockAltitude(expected));
+            //assert
+            assert.strictEqual(barometer.latest.altitude.value, expected);
+        });
+
+        it("Has altitude", function () {
+            //arrange
+            const expected = 100;
+            barometer.clear();
+            //act
+            barometer.onDeltasUpdate(createDeltaMockAltitude(expected));
+            //assert
+            assert.strictEqual(barometer.latest.altitude.value, expected);
         });
     });
 });
@@ -158,6 +188,36 @@ function createDeltaMockPressure(value) {
                     {
                         path: 'environment.outside.pressure',
                         value: value
+                    }
+                ]
+            }
+        ]
+    }
+}
+
+function createDeltaMockTemperature(temperature) {
+    return {
+        updates: [
+            {
+                values: [
+                    {
+                        path: 'environment.outside.temperature',
+                        value: temperature
+                    }
+                ]
+            }
+        ]
+    }
+}
+
+function createDeltaMockAltitude(altitude) {
+    return {
+        updates: [
+            {
+                values: [
+                    {
+                        path: 'navigation.gnss.antennaAltitude',
+                        value: altitude
                     }
                 ]
             }
@@ -199,12 +259,12 @@ function mockPositionNorthernHemisphere() {
     return {
         "longitude": -61.59,
         "latitude": 15.84
-      }
+    }
 }
 
 function mockPositionSouthernHemisphere() {
     return {
         "longitude": -61.59,
         "latitude": -15.84
-      }
+    }
 }
