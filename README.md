@@ -1,3 +1,5 @@
+![Node.js Package](https://github.com/oyve/signalk-barometer-trend/workflows/Node.js%20Package/badge.svg)
+
 # signalk-barometer-trend
 Calculate the pressure trend of a barometer. Are there foul weather on the way?
 
