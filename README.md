@@ -27,7 +27,7 @@ Note: If `'environment.outside.pressure.prediction.front.*` shows "N/A" - this m
 
 ## More details
 
-For more details please visit [github.com/oyve/barometer-trend](github.com/oyve/barometer-trend) library.
+For more details please visit [github.com/oyve/barometer-trend](https://github.com/oyve/barometer-trend) library.
 
 ![SignalK Data Browser](/images/signalk_barometer_trend.png)
 ![SignalK Data Browser](/images/signalk_barometer_trend2.png)
