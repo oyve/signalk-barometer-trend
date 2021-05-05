@@ -1,6 +1,6 @@
 {
   "name": "signalk-barometer-trend",
-  "version": "2.1.3",
+  "version": "2.1.4",
   "description": "Get pressure trend and weather predictions from a barometer over time",
   "main": "index.js",
   "scripts": {
@@ -26,7 +26,7 @@
     "forecast"
   ],
   "author": "github.com/oyve",
-  "license": "ISC",
+  "license": "Apache-2.0",
   "bugs": {
     "url": "https://github.com/oyve/signalk-barometer-trend/issues"
   },
