@@ -1,6 +1,7 @@
 'use strict'
 const assert = require('assert');
 const barometer = require('../barometer');
+const KELVIN = 273.15;
 
 describe("Barometer Tests", function () {
     describe("onDeltasUpdated", function () {
@@ -19,10 +20,9 @@ describe("Barometer Tests", function () {
             barometer.clear();
             const expectedTendency = "RISING";
             const expectedTrend = "STEADY";
-            barometer.onDeltasUpdate(createDeltaMockPressure(1015));
-            barometer.onDeltasUpdate(createDeltaMockPressure(1016));
+            barometer.onDeltasUpdate(createDeltaMockPressure(101500));
             //act
-            let actual = barometer.onDeltasUpdate(createDeltaMockPressure(1017));
+            let actual = barometer.onDeltasUpdate(createDeltaMockPressure(101500 + 3));
             //assert
             assert.strictEqual(actual.find((f) => f.path === barometer.OUTPUT_PATHS.TREND_TENDENCY).value, expectedTendency);
             assert.strictEqual(actual.find((f) => f.path === barometer.OUTPUT_PATHS.TREND_TREND).value, expectedTrend);
@@ -150,7 +150,7 @@ describe("Barometer Tests", function () {
 
         it("Has temperature", function () {
             //arrange
-            const expected = 30;
+            const expected = 30 + KELVIN;
             barometer.clear();
             //act
             barometer.onDeltasUpdate(createDeltaMockTemperature(expected));
@@ -177,7 +177,49 @@ describe("Barometer Tests", function () {
             //assert
             assert.strictEqual(barometer.latest.altitude.value, expected);
         });
+
+        it("To Kelvin if Celcius", function () {
+            //arrange
+            const expected = 30 + KELVIN;
+            barometer.clear();
+            //act
+            let actual = barometer.toKelvinIfCelcius(30);
+            //assert
+            assert.strictEqual(actual, expected);
+        });
+
+        it("Not to Kelvin if Kelvin", function () {
+            //arrange
+            const expected = KELVIN;
+            barometer.clear();
+            //act
+            let actual = barometer.toKelvinIfCelcius(expected);
+            //assert
+            assert.strictEqual(actual, expected);
+        });
+
+        it("To Pa if hPa", function () {
+            //arrange
+            const expected = 101513;
+            barometer.clear();
+            //act
+            let actual = barometer.toPaIfHpa(1015.13);
+            //assert
+            assert.strictEqual(actual, expected);
+        });
+
+        it("Not to Pa if Pa", function () {
+            //arrange
+            const expected = 101513;
+            barometer.clear();
+            //act
+            let actual = barometer.toPaIfHpa(expected);
+            //assert
+            assert.strictEqual(actual, expected);
+        });
     });
+
+
 });
 
 function createDeltaMockPressure(value) {

@@ -1,5 +1,5 @@
 'use strict'
-const barometer = require('barometer-trend');
+const barometerTrend = require('barometer-trend');
 
 const ENVIRONMENT_OUTSIDE_PRESSURE = 'environment.outside.pressure';
 const ENVIRONMENT_OUTSIDE_TEMPERATURE = 'environment.outside.temperature';
@@ -9,6 +9,8 @@ const NAVIGATION_ALTITUDE = 'navigation.gnss.antennaAltitude';
 
 const ONE_MINUTE_MILLISECONDS = 60 * 1000;
 const TEN_SECONDS_MILLISECONDS = 10 * 1000;
+
+const KELVIN = 273.15;
 
 const SUBSCRIPTIONS = [
     { path: ENVIRONMENT_WIND_TWD, period: TEN_SECONDS_MILLISECONDS, policy: "instant", minPeriod: ONE_MINUTE_MILLISECONDS },
@@ -100,7 +102,7 @@ function onPositionUpdated(value) {
 }
 
 function onTemperatureUpdated(value) {
-    latest.temperature.value = value;
+    latest.temperature.value = toKelvinIfCelcius(value);
 }
 
 function onAltitudeUpdated(value) {
@@ -114,20 +116,46 @@ function onTrueWindUpdated(value) {
 
 /**
  * 
+ * @param {number} pressure Pressure
+ * @returns returns Pascal if pressure is recieved in hPa
+ */
+function toPaIfHpa(pressure) {
+    if (Math.trunc(pressure).toString().length <= 4) {
+        pressure *= 100;
+    }
+
+    return pressure;
+}
+
+/**
+ * 
+ * @param {number} temperature Temperature
+ * @returns returns Kelvin if temperature is recieved in Celcius
+ */
+function toKelvinIfCelcius(temperature) {
+    if (Math.trunc(temperature).toString().length <= 2) {
+        temperature += KELVIN;
+    }
+
+    return temperature;
+}
+
+/**
+ * 
  * @param {number} value Pressure value in (Pa) Pascal.
  * @returns {Array<[{path:path, value:value}]>} Delta JSON-array of updates
  */
 function onPressureUpdated(value) {
     if (value == null) throw new Error("Cannot add null value");
 
-    barometer.addPressure(
+    barometerTrend.addPressure(
         new Date(),
-        value,
+        toPaIfHpa(value),
         latest.altitude.value,
         latest.temperature.value,
         hasTWDWithinOneMinute() ? latest.twd.value : null);
 
-    let forecast = barometer.getPredictions(isNortherHemisphere());
+    let forecast = barometerTrend.getPredictions(isNortherHemisphere());
 
     return forecast !== null ? prepareUpdate(forecast) : null;
 }
@@ -164,7 +192,7 @@ function buildDeltaUpdate(path, value) {
 }
 
 function clear() {
-    barometer.clear();
+    barometerTrend.clear();
 
     latest.twd.time = null;
     latest.twd.value = null;
@@ -202,5 +230,7 @@ module.exports = {
     onDeltasUpdate,
     clear,
     preLoad,
-    latest
+    latest,
+    toKelvinIfCelcius,
+    toPaIfHpa
 }
