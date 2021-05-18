@@ -219,6 +219,35 @@ describe("Barometer Tests", function () {
         });
     });
 
+    describe("System Tests", function () {
+        it("System is correct", function () {
+            //arrange
+            barometer.clear();
+            const expected = "Normal";
+            barometer.onDeltasUpdate(createDeltaMockPressure(101549));
+            //act
+            let actual = barometer.onDeltasUpdate(createDeltaMockPressure(101500));
+            //assert
+            assert.strictEqual(actual.find((f) => f.path === barometer.OUTPUT_PATHS.SYSTEM).value, expected);
+        
+        });
+    });
+
+    describe("ASL Tests", function () {
+        it("ASL is correct", function () {
+            //arrange
+            barometer.clear();
+            const expectedASL = 102649;
+            barometer.onDeltasUpdate(createDeltaMockPressure(101500));
+            barometer.onDeltasUpdate(createDeltaMockTemperature(30));
+            barometer.onDeltasUpdate(createDeltaMockAltitude(100));
+            //act
+            let actual = barometer.onDeltasUpdate(createDeltaMockPressure(101500));
+            //assert
+            assert.strictEqual(actual.find((f) => f.path === barometer.OUTPUT_PATHS.ASL).value, expectedASL);
+        
+        });
+    });
 
 });
 

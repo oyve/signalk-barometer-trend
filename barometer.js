@@ -7,8 +7,8 @@ const ENVIRONMENT_WIND_TWD = 'environment.wind.directionTrue';
 const NAVIGATION_POSITION = 'navigation.position';
 const NAVIGATION_ALTITUDE = 'navigation.gnss.antennaAltitude';
 
-const ONE_MINUTE_MILLISECONDS = 60 * 1000;
-const TEN_SECONDS_MILLISECONDS = 10 * 1000;
+const ONE_MINUTE_MILLISECONDS = secondsToMilliseconds(60);
+const TEN_SECONDS_MILLISECONDS = secondsToMilliseconds(10);
 
 const KELVIN = 273.15;
 
@@ -19,6 +19,10 @@ const SUBSCRIPTIONS = [
     { path: ENVIRONMENT_OUTSIDE_TEMPERATURE, period: ONE_MINUTE_MILLISECONDS, policy: "instant", minPeriod: ONE_MINUTE_MILLISECONDS },
     { path: ENVIRONMENT_OUTSIDE_PRESSURE, period: ONE_MINUTE_MILLISECONDS }
 ];
+
+function secondsToMilliseconds(seconds) {
+    return seconds * 1000;
+}
 
 const pathPrefix = "environment.outside.pressure.";
 
@@ -40,7 +44,17 @@ const OUTPUT_PATHS = {
 
     "PREDICTION_FRONT_TENDENCY": pathPrefix + "prediction.front.tendency",
     "PREDICTION_FRONT_PROGNOSE": pathPrefix + "prediction.front.prognose",
-    "PREDICTION_FRONT_WIND": pathPrefix + "prediction.front.wind"
+    "PREDICTION_FRONT_WIND": pathPrefix + "prediction.front.wind",
+
+    "ASL": pathPrefix + "ASL",
+    "SYSTEM": pathPrefix + "system",
+
+    "HISTORY_1HR": pathPrefix + "1hr",
+    "HISTORY_3HR": pathPrefix + "3hr",
+    "HISTORY_6HR": pathPrefix + "6hr",
+    "HISTORY_12HR": pathPrefix + "12hr",
+    "HISTORY_24HR": pathPrefix + "24hr",
+    "HISTORY_48HR": pathPrefix + "48hr",
 }
 
 const latest = {
@@ -181,7 +195,25 @@ function prepareUpdate(forecast) {
         buildDeltaUpdate(OUTPUT_PATHS.PREDICTION_FRONT_TENDENCY, forecast !== null ? forecast.predictions.front.tendency : waitingMessage),
         buildDeltaUpdate(OUTPUT_PATHS.PREDICTION_FRONT_PROGNOSE, forecast !== null ? forecast.predictions.front.prognose : waitingMessage),
         buildDeltaUpdate(OUTPUT_PATHS.PREDICTION_FRONT_WIND, forecast !== null ? forecast.predictions.front.wind : waitingMessage),
+
+        buildDeltaUpdate(OUTPUT_PATHS.SYSTEM, forecast !== null ? forecast.system.name : null),
+        buildDeltaUpdate(OUTPUT_PATHS.ASL, forecast !== null ? forecast.lastPressure.value : null),
+
+        buildDeltaUpdate(OUTPUT_PATHS.HISTORY_1HR, forecast !== null ? getHistory(forecast, 1) : waitingMessage),
+        buildDeltaUpdate(OUTPUT_PATHS.HISTORY_3HR, forecast !== null ? getHistory(forecast, 3) : waitingMessage),
+        buildDeltaUpdate(OUTPUT_PATHS.HISTORY_6HR, forecast !== null ? getHistory(forecast, 6) : waitingMessage),
+        buildDeltaUpdate(OUTPUT_PATHS.HISTORY_12HR, forecast !== null ? getHistory(forecast, 12) : waitingMessage),
+        buildDeltaUpdate(OUTPUT_PATHS.HISTORY_24HR, forecast !== null ? getHistory(forecast, 24) : waitingMessage),
+        buildDeltaUpdate(OUTPUT_PATHS.HISTORY_48HR, forecast !== null ? getHistory(forecast, 48) : waitingMessage),
     ];
+}
+
+function getHistory(forecast, hour) {
+    let history = forecast.history.find((h) => h.hour === hour);
+
+    if(history === null || history.pressure === null) return null;
+
+    return history.pressure.value;
 }
 
 function buildDeltaUpdate(path, value) {
