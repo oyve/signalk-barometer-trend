@@ -36,7 +36,7 @@ const OUTPUT_PATHS = {
     "PREDICTION_PRESSURE": pathPrefix + "prediction.pressureOnly",
     "PREDICTION_QUADRANT": pathPrefix + "prediction.quadrant",
     "PREDICTION_SEASON": pathPrefix + "prediction.season",
-    "PREDICTION_BEAUFORT_FORCE": pathPrefix + "prediction.beaufort.force",
+    "PREDICTION_BEAUFORT_FORCE": pathPrefix + "prediction.beaufort",
     "PREDICTION_BEAUFORT_DESCRIPTION": pathPrefix + "prediction.beaufort.description",
 
     "PREDICTION_FRONT_TENDENCY": pathPrefix + "prediction.front.tendency",
