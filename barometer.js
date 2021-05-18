@@ -7,8 +7,8 @@ const ENVIRONMENT_WIND_TWD = 'environment.wind.directionTrue';
 const NAVIGATION_POSITION = 'navigation.position';
 const NAVIGATION_ALTITUDE = 'navigation.gnss.antennaAltitude';
 
-const ONE_MINUTE_MILLISECONDS = secondsToMilliseconds(60);
-const TEN_SECONDS_MILLISECONDS = secondsToMilliseconds(10);
+const ONE_MINUTE_MILLISECONDS = 60 * 1000;
+const TEN_SECONDS_MILLISECONDS = 10 * 1000;
 
 const KELVIN = 273.15;
 
@@ -19,10 +19,6 @@ const SUBSCRIPTIONS = [
     { path: ENVIRONMENT_OUTSIDE_TEMPERATURE, period: ONE_MINUTE_MILLISECONDS, policy: "instant", minPeriod: ONE_MINUTE_MILLISECONDS },
     { path: ENVIRONMENT_OUTSIDE_PRESSURE, period: ONE_MINUTE_MILLISECONDS }
 ];
-
-function secondsToMilliseconds(seconds) {
-    return seconds * 1000;
-}
 
 const pathPrefix = "environment.outside.pressure.";
 
@@ -40,7 +36,8 @@ const OUTPUT_PATHS = {
     "PREDICTION_PRESSURE": pathPrefix + "prediction.pressureOnly",
     "PREDICTION_QUADRANT": pathPrefix + "prediction.quadrant",
     "PREDICTION_SEASON": pathPrefix + "prediction.season",
-    "PREDICTION_BEAUFORT": pathPrefix + "prediction.beaufort",
+    "PREDICTION_BEAUFORT_FORCE": pathPrefix + "prediction.beaufort.force",
+    "PREDICTION_BEAUFORT_DESCRIPTION": pathPrefix + "prediction.beaufort.description",
 
     "PREDICTION_FRONT_TENDENCY": pathPrefix + "prediction.front.tendency",
     "PREDICTION_FRONT_PROGNOSE": pathPrefix + "prediction.front.prognose",
@@ -54,7 +51,7 @@ const OUTPUT_PATHS = {
     "HISTORY_6HR": pathPrefix + "6hr",
     "HISTORY_12HR": pathPrefix + "12hr",
     "HISTORY_24HR": pathPrefix + "24hr",
-    "HISTORY_48HR": pathPrefix + "48hr",
+    "HISTORY_48HR": pathPrefix + "48hr"
 }
 
 const latest = {
@@ -191,7 +188,8 @@ function prepareUpdate(forecast) {
         buildDeltaUpdate(OUTPUT_PATHS.PREDICTION_PRESSURE, forecast !== null ? forecast.predictions.pressureOnly : waitingMessage),
         buildDeltaUpdate(OUTPUT_PATHS.PREDICTION_QUADRANT, forecast !== null ? forecast.predictions.quadrant : waitingMessage),
         buildDeltaUpdate(OUTPUT_PATHS.PREDICTION_SEASON, forecast !== null ? forecast.predictions.season : waitingMessage),
-        buildDeltaUpdate(OUTPUT_PATHS.PREDICTION_BEAUFORT, forecast !== null ? forecast.predictions.beaufort : waitingMessage),
+        buildDeltaUpdate(OUTPUT_PATHS.PREDICTION_BEAUFORT_FORCE, forecast !== null ? forecast.predictions.beaufort.force : waitingMessage),
+        buildDeltaUpdate(OUTPUT_PATHS.PREDICTION_BEAUFORT_DESCRIPTION, forecast !== null ? forecast.predictions.beaufort.description : waitingMessage),
         buildDeltaUpdate(OUTPUT_PATHS.PREDICTION_FRONT_TENDENCY, forecast !== null ? forecast.predictions.front.tendency : waitingMessage),
         buildDeltaUpdate(OUTPUT_PATHS.PREDICTION_FRONT_PROGNOSE, forecast !== null ? forecast.predictions.front.prognose : waitingMessage),
         buildDeltaUpdate(OUTPUT_PATHS.PREDICTION_FRONT_WIND, forecast !== null ? forecast.predictions.front.wind : waitingMessage),
