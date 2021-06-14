@@ -11,6 +11,8 @@ module.exports = function (app) {
     var unsubscribes = [];
     plugin.start = function (options, restartPlugin) {
 
+        barometer.setSampleRate(options.rate * 1000);
+
         app.debug('Plugin started');
         let localSubscription = {
             context: '*',
@@ -35,9 +37,18 @@ module.exports = function (app) {
         app.debug('Plugin stopped');
     };
 
+
     plugin.schema = {
-        // The plugin schema
-    };
+        type: 'object',
+        properties: {
+          rate: {
+            title: "Sample Rate (in seconds)",
+            description: 'Example values: 60, 600, 1200 (1, 10, 20 minutes). Min: 60, Max = 3600',
+            type: 'number',
+            default: 60
+          }
+        }
+      }
 
     /**
      * 

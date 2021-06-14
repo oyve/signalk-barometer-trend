@@ -1,6 +1,7 @@
 'use strict'
 const assert = require('assert');
 const barometer = require('../barometer');
+const utils = require('../')
 const KELVIN = 273.15;
 
 describe("Barometer Tests", function () {
@@ -24,9 +25,9 @@ describe("Barometer Tests", function () {
             //act
             let actual = barometer.onDeltasUpdate(createDeltaMockPressure(101500 + 3));
             //assert
-            assert.strictEqual(actual.find((f) => f.path === barometer.OUTPUT_PATHS.TREND_TENDENCY).value, expectedTendency);
-            assert.strictEqual(actual.find((f) => f.path === barometer.OUTPUT_PATHS.TREND_TREND).value, expectedTrend);
-            assert.strictEqual(actual.find((f) => f.path === barometer.OUTPUT_PATHS.TREND_SEVERITY).value, 0);
+            assert.strictEqual(actual.find((f) => f.path === getPath("trend.tendency")).value, expectedTendency);
+            assert.strictEqual(actual.find((f) => f.path === getPath("trend.trend")).value, expectedTrend);
+            assert.strictEqual(actual.find((f) => f.path === getPath("trend.severity")).value, 0);
         });
 
         it("it should throw an exception", function () {
@@ -53,7 +54,7 @@ describe("Barometer Tests", function () {
                 //act
                 let actual = barometer.preLoad();
                 //assert
-                assert.strictEqual(actual.find((f) => f.path === barometer.OUTPUT_PATHS.TREND_TENDENCY).value, "Waiting..");
+                assert.strictEqual(actual.find((f) => f.path === getPath("trend.tendency")).value, null);
             });
         });
 
@@ -177,46 +178,6 @@ describe("Barometer Tests", function () {
             //assert
             assert.strictEqual(barometer.latest.altitude.value, expected);
         });
-
-        it("To Kelvin if Celcius", function () {
-            //arrange
-            const expected = 30 + KELVIN;
-            barometer.clear();
-            //act
-            let actual = barometer.toKelvinIfCelcius(30);
-            //assert
-            assert.strictEqual(actual, expected);
-        });
-
-        it("Not to Kelvin if Kelvin", function () {
-            //arrange
-            const expected = KELVIN;
-            barometer.clear();
-            //act
-            let actual = barometer.toKelvinIfCelcius(expected);
-            //assert
-            assert.strictEqual(actual, expected);
-        });
-
-        it("To Pa if hPa", function () {
-            //arrange
-            const expected = 101513;
-            barometer.clear();
-            //act
-            let actual = barometer.toPaIfHpa(1015.13);
-            //assert
-            assert.strictEqual(actual, expected);
-        });
-
-        it("Not to Pa if Pa", function () {
-            //arrange
-            const expected = 101513;
-            barometer.clear();
-            //act
-            let actual = barometer.toPaIfHpa(expected);
-            //assert
-            assert.strictEqual(actual, expected);
-        });
     });
 
     describe("System Tests", function () {
@@ -228,7 +189,7 @@ describe("Barometer Tests", function () {
             //act
             let actual = barometer.onDeltasUpdate(createDeltaMockPressure(101500));
             //assert
-            assert.strictEqual(actual.find((f) => f.path === barometer.OUTPUT_PATHS.SYSTEM).value, expected);
+            assert.strictEqual(actual.find((f) => f.path === getPath("system")).value, expected);
         
         });
     });
@@ -237,19 +198,22 @@ describe("Barometer Tests", function () {
         it("ASL is correct", function () {
             //arrange
             barometer.clear();
-            const expectedASL = 102649;
+            const expected = 102649;
             barometer.onDeltasUpdate(createDeltaMockPressure(101500));
-            barometer.onDeltasUpdate(createDeltaMockTemperature(30));
+            barometer.onDeltasUpdate(createDeltaMockTemperature(30 + 273.15));
             barometer.onDeltasUpdate(createDeltaMockAltitude(100));
             //act
             let actual = barometer.onDeltasUpdate(createDeltaMockPressure(101500));
             //assert
-            assert.strictEqual(actual.find((f) => f.path === barometer.OUTPUT_PATHS.ASL).value, expectedASL);
+            assert.strictEqual(actual.find((f) => f.path === getPath("ASL")).value, expected);
         
         });
     });
-
 });
+
+function getPath(path) {
+    return "environment.outside.pressure." + path;
+}
 
 function createDeltaMockPressure(value) {
     return {
