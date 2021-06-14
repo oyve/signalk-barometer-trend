@@ -1,60 +1,31 @@
 'use strict'
 const barometerTrend = require('barometer-trend');
 
-const ENVIRONMENT_OUTSIDE_PRESSURE = 'environment.outside.pressure';
-const ENVIRONMENT_OUTSIDE_TEMPERATURE = 'environment.outside.temperature';
-const ENVIRONMENT_WIND_TWD = 'environment.wind.directionTrue';
-const NAVIGATION_POSITION = 'navigation.position';
-const NAVIGATION_ALTITUDE = 'navigation.gnss.antennaAltitude';
+/**
+ * 
+ * @param {number} rate Pressure sample rate in milliseconds
+ */
+function setSampleRate(rate) {
+    if (rate > 3600) rate = secondsToMilliseconds(3600);
+    if (rate < 60) rate = secondsToMilliseconds(60);
 
-const ONE_MINUTE_MILLISECONDS = 60 * 1000;
-const TEN_SECONDS_MILLISECONDS = 10 * 1000;
-
-const KELVIN = 273.15;
-
-const SUBSCRIPTIONS = [
-    { path: ENVIRONMENT_WIND_TWD, period: TEN_SECONDS_MILLISECONDS, policy: "instant", minPeriod: ONE_MINUTE_MILLISECONDS },
-    { path: NAVIGATION_POSITION, period: ONE_MINUTE_MILLISECONDS, policy: "instant", minPeriod: ONE_MINUTE_MILLISECONDS },
-    { path: NAVIGATION_ALTITUDE, period: ONE_MINUTE_MILLISECONDS, policy: "instant", minPeriod: ONE_MINUTE_MILLISECONDS },
-    { path: ENVIRONMENT_OUTSIDE_TEMPERATURE, period: ONE_MINUTE_MILLISECONDS, policy: "instant", minPeriod: ONE_MINUTE_MILLISECONDS },
-    { path: ENVIRONMENT_OUTSIDE_PRESSURE, period: ONE_MINUTE_MILLISECONDS }
-];
-
-const pathPrefix = "environment.outside.pressure.";
-
-const OUTPUT_PATHS = {
-    "TREND_TENDENCY_COMBINED": pathPrefix + "trend",
-    "TREND_TENDENCY": pathPrefix + "trend.tendency",
-    "TREND_TREND": pathPrefix + "trend.trend",
-    "TREND_SEVERITY": pathPrefix + "trend.severity",
-    "TREND_DIFFERENCE_FROM": pathPrefix + "trend.from",
-    "TREND_DIFFERENCE_TO": pathPrefix + "trend.to",
-    "TREND_DIFFERENCE": pathPrefix + "trend.difference",
-    "TREND_DIFFERENCE_RATIO": pathPrefix + "trend.difference.ratio",
-    "TREND_DIFFERENCE_PERIOD": pathPrefix + "trend.difference.period",
-
-    "PREDICTION_PRESSURE": pathPrefix + "prediction.pressureOnly",
-    "PREDICTION_QUADRANT": pathPrefix + "prediction.quadrant",
-    "PREDICTION_SEASON": pathPrefix + "prediction.season",
-    "PREDICTION_BEAUFORT_FORCE": pathPrefix + "prediction.beaufort",
-    "PREDICTION_BEAUFORT_DESCRIPTION": pathPrefix + "prediction.beaufort.description",
-
-    "PREDICTION_FRONT_TENDENCY": pathPrefix + "prediction.front.tendency",
-    "PREDICTION_FRONT_PROGNOSE": pathPrefix + "prediction.front.prognose",
-    "PREDICTION_FRONT_WIND": pathPrefix + "prediction.front.wind",
-
-    "ASL": pathPrefix + "ASL",
-    "SYSTEM": pathPrefix + "system",
-
-    "HISTORY_1HR": pathPrefix + "1hr",
-    "HISTORY_3HR": pathPrefix + "3hr",
-    "HISTORY_6HR": pathPrefix + "6hr",
-    "HISTORY_12HR": pathPrefix + "12hr",
-    "HISTORY_24HR": pathPrefix + "24hr",
-    "HISTORY_48HR": pathPrefix + "48hr"
+    SAMPLE_RATE = rate;
 }
 
-const latest = {
+const minutesToMilliseconds = (minutes) => secondsToMilliseconds(minutes * 60);
+const secondsToMilliseconds = (seconds) => seconds * 1000;
+
+let SAMPLE_RATE = secondsToMilliseconds(60); //default
+
+const SUBSCRIPTIONS = [
+    { path: 'environment.wind.directionTrue', period: secondsToMilliseconds(10), policy: "instant", minPeriod: secondsToMilliseconds(60), handle: (value) => onTrueWindUpdated(value) },
+    { path: 'navigation.position', period: secondsToMilliseconds(10), policy: "instant", minPeriod: secondsToMilliseconds(60), handle: (value) => onPositionUpdated(value) },
+    { path: 'navigation.gnss.antennaAltitude', period: secondsToMilliseconds(10), policy: "instant", minPeriod: secondsToMilliseconds(60), handle: (value) => onAltitudeUpdated(value) },
+    { path: 'environment.outside.temperature', period: secondsToMilliseconds(10), policy: "instant", minPeriod: secondsToMilliseconds(60), handle: (value) => onTemperatureUpdated(value) },
+    { path: 'environment.outside.pressure', period: SAMPLE_RATE, handle: (value) => onPressureUpdated(value) }
+];
+
+const TEMPLATE_LATEST = {
     twd: {
         time: null,
         value: null
@@ -71,13 +42,7 @@ const latest = {
     }
 }
 
-const pathHandles = [
-    { path: ENVIRONMENT_OUTSIDE_PRESSURE, handle: (value) => onPressureUpdated(value) },
-    { path: ENVIRONMENT_WIND_TWD, handle: (value) => onTrueWindUpdated(value) },
-    { path: NAVIGATION_POSITION, handle: (value) => onPositionUpdated(value) },
-    { path: NAVIGATION_ALTITUDE, handle: (value) => onAltitudeUpdated(value) },
-    { path: ENVIRONMENT_OUTSIDE_TEMPERATURE, handle: (value) => onTemperatureUpdated(value) }
-];
+let latest = TEMPLATE_LATEST;
 
 /**
  * 
@@ -93,7 +58,7 @@ function onDeltasUpdate(deltas) {
 
     deltas.updates.forEach(u => {
         u.values.forEach((value) => {
-            let onDeltaUpdated = pathHandles.find((d) => d.path === value.path);
+            let onDeltaUpdated = SUBSCRIPTIONS.find((d) => d.path === value.path);
 
             if (onDeltaUpdated !== null) {
                 let updates = onDeltaUpdated.handle(value.value);
@@ -113,7 +78,7 @@ function onPositionUpdated(value) {
 }
 
 function onTemperatureUpdated(value) {
-    latest.temperature.value = toKelvinIfCelcius(value);
+    latest.temperature.value = value;
 }
 
 function onAltitudeUpdated(value) {
@@ -127,91 +92,72 @@ function onTrueWindUpdated(value) {
 
 /**
  * 
- * @param {number} pressure Pressure
- * @returns returns Pascal if pressure is recieved in hPa
- */
-function toPaIfHpa(pressure) {
-    if (Math.trunc(pressure).toString().length <= 4) {
-        pressure *= 100;
-    }
-
-    return pressure;
-}
-
-/**
- * 
- * @param {number} temperature Temperature
- * @returns returns Kelvin if temperature is recieved in Celcius
- */
-function toKelvinIfCelcius(temperature) {
-    if (Math.trunc(temperature).toString().length <= 2) {
-        temperature += KELVIN;
-    }
-
-    return temperature;
-}
-
-/**
- * 
  * @param {number} value Pressure value in (Pa) Pascal.
  * @returns {Array<[{path:path, value:value}]>} Delta JSON-array of updates
  */
 function onPressureUpdated(value) {
-    if (value == null) throw new Error("Cannot add null value");
+    if (value === null || value === undefined) throw new Error("Cannot add null value");
 
     barometerTrend.addPressure(
         new Date(),
-        toPaIfHpa(value),
+        value,
         latest.altitude.value,
         latest.temperature.value,
         hasTWDWithinOneMinute() ? latest.twd.value : null);
 
-    let forecast = barometerTrend.getPredictions(isNortherHemisphere());
+    let forecast = barometerTrend.getPredictions(isNorthernHemisphere());
 
-    return forecast !== null ? prepareUpdate(forecast) : null;
+    return forecast !== null ? mapProperties(forecast) : null;
 }
 
-function prepareUpdate(forecast) {
-    const waitingMessage = "Waiting..";
-    return [
-        buildDeltaUpdate(OUTPUT_PATHS.TREND_TENDENCY_COMBINED, forecast !== null ? forecast.trend.tendency + "." + forecast.trend.trend : waitingMessage),
-        buildDeltaUpdate(OUTPUT_PATHS.TREND_TENDENCY, forecast !== null ? forecast.trend.tendency : waitingMessage),
-        buildDeltaUpdate(OUTPUT_PATHS.TREND_TREND, forecast !== null ? forecast.trend.trend : waitingMessage),
-        buildDeltaUpdate(OUTPUT_PATHS.TREND_SEVERITY, forecast !== null ? forecast.trend.severity : waitingMessage),
+const propertyMap = [
+    { signalK: "environment.outside.pressure.trend.tendency", src: (json) => validateProperty(json.trend.tendency) },
+    { signalK: "environment.outside.pressure.trend.trend", src: (json) => validateProperty(json.trend.trend) },
+    { signalK: "environment.outside.pressure.trend.severity", src: (json) => validateProperty(json.trend.severity) },
+    { signalK: "environment.outside.pressure.trend.from", src: (json) => validateProperty(json.trend.from.meta.value) },
+    { signalK: "environment.outside.pressure.trend.to", src: (json) => validateProperty(json.trend.to.meta.value) },
+    { signalK: "environment.outside.pressure.trend.period", src: (json) => validateProperty(json.trend.period) },
 
-        buildDeltaUpdate(OUTPUT_PATHS.TREND_DIFFERENCE_FROM, forecast !== null ? forecast.trend.from : waitingMessage),
-        buildDeltaUpdate(OUTPUT_PATHS.TREND_DIFFERENCE_TO, forecast !== null ? forecast.trend.to : waitingMessage),
-        buildDeltaUpdate(OUTPUT_PATHS.TREND_DIFFERENCE, forecast !== null ? forecast.trend.difference : waitingMessage),
-        buildDeltaUpdate(OUTPUT_PATHS.TREND_DIFFERENCE_PERIOD, forecast !== null ? forecast.trend.period : waitingMessage),
-        buildDeltaUpdate(OUTPUT_PATHS.TREND_DIFFERENCE_RATIO, forecast !== null ? forecast.trend.ratio : waitingMessage),
+    { signalK: "environment.outside.pressure.prediction.pressureOnly", src: (json) => validateProperty(json.predictions.pressureOnly) },
+    { signalK: "environment.outside.pressure.prediction.quadrant", src: (json) => validateProperty(json.predictions.quadrant) },
+    { signalK: "environment.outside.pressure.prediction.season", src: (json) => validateProperty(json.predictions.season) },
+    { signalK: "environment.outside.pressure.prediction.beaufort", src: (json) => validateProperty(json.predictions.beaufort.force) },
+    { signalK: "environment.outside.pressure.prediction.beaufort.description", src: (json) => validateProperty(json.predictions.beaufort.force.description) },
+    { signalK: "environment.outside.pressure.prediction.front.tendency", src: (json) => validateProperty(json.predictions.front.tendency) },
+    { signalK: "environment.outside.pressure.prediction.front.prognose", src: (json) => validateProperty(json.predictions.front.prognose) },
+    { signalK: "environment.outside.pressure.prediction.front.wind", src: (json) => validateProperty(json.predictions.front.wind) },
 
-        buildDeltaUpdate(OUTPUT_PATHS.PREDICTION_PRESSURE, forecast !== null ? forecast.predictions.pressureOnly : waitingMessage),
-        buildDeltaUpdate(OUTPUT_PATHS.PREDICTION_QUADRANT, forecast !== null ? forecast.predictions.quadrant : waitingMessage),
-        buildDeltaUpdate(OUTPUT_PATHS.PREDICTION_SEASON, forecast !== null ? forecast.predictions.season : waitingMessage),
-        buildDeltaUpdate(OUTPUT_PATHS.PREDICTION_BEAUFORT_FORCE, forecast !== null ? forecast.predictions.beaufort.force : waitingMessage),
-        buildDeltaUpdate(OUTPUT_PATHS.PREDICTION_BEAUFORT_DESCRIPTION, forecast !== null ? forecast.predictions.beaufort.description : waitingMessage),
-        buildDeltaUpdate(OUTPUT_PATHS.PREDICTION_FRONT_TENDENCY, forecast !== null ? forecast.predictions.front.tendency : waitingMessage),
-        buildDeltaUpdate(OUTPUT_PATHS.PREDICTION_FRONT_PROGNOSE, forecast !== null ? forecast.predictions.front.prognose : waitingMessage),
-        buildDeltaUpdate(OUTPUT_PATHS.PREDICTION_FRONT_WIND, forecast !== null ? forecast.predictions.front.wind : waitingMessage),
+    { signalK: "environment.outside.pressure.system", src: (json) => validateProperty(json.system.name) },
+    { signalK: "environment.outside.pressure.ASL", src: (json) => validateProperty(json.lastPressure.value) },
 
-        buildDeltaUpdate(OUTPUT_PATHS.SYSTEM, forecast !== null ? forecast.system.name : null),
-        buildDeltaUpdate(OUTPUT_PATHS.ASL, forecast !== null ? forecast.lastPressure.value : null),
+    { signalK: "environment.outside.pressure.1hr", src: (json) => history(json, 1) },
+    { signalK: "environment.outside.pressure.3hr", src: (json) => history(json, 3) },
+    { signalK: "environment.outside.pressure.6hr", src: (json) => history(json, 6) },
+    { signalK: "environment.outside.pressure.12hr", src: (json) => history(json, 12) },
+    { signalK: "environment.outside.pressure.24hr", src: (json) => history(json, 24) },
+    { signalK: "environment.outside.pressure.48hr", src: (json) => history(json, 48) }
+]
 
-        buildDeltaUpdate(OUTPUT_PATHS.HISTORY_1HR, forecast !== null ? getHistory(forecast, 1) : waitingMessage),
-        buildDeltaUpdate(OUTPUT_PATHS.HISTORY_3HR, forecast !== null ? getHistory(forecast, 3) : waitingMessage),
-        buildDeltaUpdate(OUTPUT_PATHS.HISTORY_6HR, forecast !== null ? getHistory(forecast, 6) : waitingMessage),
-        buildDeltaUpdate(OUTPUT_PATHS.HISTORY_12HR, forecast !== null ? getHistory(forecast, 12) : waitingMessage),
-        buildDeltaUpdate(OUTPUT_PATHS.HISTORY_24HR, forecast !== null ? getHistory(forecast, 24) : waitingMessage),
-        buildDeltaUpdate(OUTPUT_PATHS.HISTORY_48HR, forecast !== null ? getHistory(forecast, 48) : waitingMessage),
-    ];
+const history = (json, hour) => { validateProperty(json.history.find((h) => h.hour === hour)) }
+
+const defaultPropertyValue = null;
+function mapProperties(json) {
+
+    const deltaUpdates = [];
+    propertyMap.forEach((p) => {
+        try {
+            let value = (json !== null) ? p.src(json) : defaultPropertyValue;
+            let deltaUpdate = buildDeltaUpdate(p.signalK, value);
+            deltaUpdates.push(deltaUpdate);
+        } catch {
+            console.debug("Fail to read property: " + p.signalK);
+        }
+    });
+    return deltaUpdates;
 }
 
-function getHistory(forecast, hour) {
-    let history = forecast.history.find((h) => h.hour === hour);
-
-    if(history === null || history.pressure === null) return null;
-
-    return history.pressure.value;
+function validateProperty(value, defaultValue = defaultPropertyValue) {
+    return (value === null || value === undefined) ? defaultValue : value;
 }
 
 function buildDeltaUpdate(path, value) {
@@ -224,6 +170,7 @@ function buildDeltaUpdate(path, value) {
 function clear() {
     barometerTrend.clear();
 
+    //latest = ...latestTemplate;
     latest.twd.time = null;
     latest.twd.value = null;
     latest.position.time = null;
@@ -233,18 +180,18 @@ function clear() {
 }
 
 function preLoad() {
-    return prepareUpdate(null);
+    return mapProperties(null);
 }
 
 function hasTWDWithinOneMinute() {
-    return latest.twd.time !== null ? (Date.now() - latest.twd.time) <= ONE_MINUTE_MILLISECONDS : false;
+    return latest.twd.time !== null ? (Date.now() - latest.twd.time) <= secondsToMilliseconds(60) : false;
 }
 
 function hasPositionWithinOneMinute() {
-    return latest.position.time !== null ? (Date.now() - latest.position.time) <= ONE_MINUTE_MILLISECONDS : false;
+    return latest.position.time !== null ? (Date.now() - latest.position.time) <= secondsToMilliseconds(60) : false;
 }
 
-function isNortherHemisphere() {
+function isNorthernHemisphere() {
     let position = hasPositionWithinOneMinute() ? latest.position.value : null;
     if (position === null) return true; //default to northern hemisphere
 
@@ -253,14 +200,12 @@ function isNortherHemisphere() {
 
 module.exports = {
     SUBSCRIPTIONS,
-    OUTPUT_PATHS,
     hasTWDWithinOneMinute,
-    isNortherHemisphere,
+    isNortherHemisphere: isNorthernHemisphere,
     hasPositionWithinOneMinute,
     onDeltasUpdate,
     clear,
     preLoad,
     latest,
-    toKelvinIfCelcius,
-    toPaIfHpa
+    setSampleRate
 }
