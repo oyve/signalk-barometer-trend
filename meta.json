@@ -80,7 +80,7 @@
         {
             "path": "environment.outside.pressure.trend.period",
             "value": {
-                "units": "second",
+                "units": "s",
 				"type": "number",
                 "description": "Trend period, 60 or 180 minutes ",
                 "displayName": "Trend period",
