@@ -1,7 +1,6 @@
 'use strict'
 const assert = require('assert');
 const barometer = require('../barometer');
-const utils = require('../')
 const KELVIN = 273.15;
 
 describe("Barometer Tests", function () {
@@ -54,7 +53,7 @@ describe("Barometer Tests", function () {
                 //act
                 let actual = barometer.preLoad();
                 //assert
-                assert.strictEqual(actual.find((f) => f.path === getPath("trend.tendency")).value, null);
+                assert.strictEqual(actual.values.find((f) => f.path === getPath("trend.tendency")).value, null);
             });
         });
 

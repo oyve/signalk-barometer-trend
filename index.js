@@ -41,24 +41,26 @@ module.exports = function (app) {
     plugin.schema = {
         type: 'object',
         properties: {
-          rate: {
-            title: "Sample Rate (in seconds)",
-            description: 'Example values: 60, 600, 1200 (1, 10, 20 minutes). Min: 60, Max = 3600',
-            type: 'number',
-            default: 60
-          }
+            rate: {
+                title: "Sample Rate (in seconds)",
+                description: 'Example values: 60, 600, 1200 (1, 10, 20 minutes). Min: 60, Max = 3600',
+                type: 'number',
+                default: 60
+            }
         }
-      }
+    }
 
     /**
      * 
-     * @param {Array<[{path:path, value:value}]>} messages 
+     * @param {Array<[{path:path, value:value}]>} deltas 
      */
-    function sendDelta(messages) {
+    function sendDelta(deltas) {
         app.handleMessage('signalk-barometer-trend', {
+            context: "vessels." + app.selfId,
             updates: [
                 {
-                    values: messages
+                    timestamp: new Date().toISOString(),
+                    ...deltas
                 }
             ]
         })

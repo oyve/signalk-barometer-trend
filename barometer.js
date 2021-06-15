@@ -1,6 +1,6 @@
 'use strict'
 const barometerTrend = require('barometer-trend');
-
+const map = require('./map');
 /**
  * 
  * @param {number} rate Pressure sample rate in milliseconds
@@ -63,7 +63,7 @@ function onDeltasUpdate(deltas) {
             if (onDeltaUpdated !== null) {
                 let updates = onDeltaUpdated.handle(value.value);
                 if (updates !== null && updates !== undefined) {
-                    updates.forEach((u) => deltaMessages.push(u));
+                    updates.values.forEach((u) => deltaMessages.push(u));
                 }
             }
         });
@@ -105,67 +105,11 @@ function onPressureUpdated(value) {
         latest.temperature.value,
         hasTWDWithinOneMinute() ? latest.twd.value : null);
 
-    let forecast = barometerTrend.getPredictions(isNorthernHemisphere());
+    let json = barometerTrend.getPredictions(isNorthernHemisphere());
 
-    return forecast !== null ? mapProperties(forecast) : null;
+    return json !== null ? map.mapProperties(json) : null;
 }
 
-const propertyMap = [
-    { signalK: "environment.outside.pressure.trend.tendency", src: (json) => validateProperty(json.trend.tendency) },
-    { signalK: "environment.outside.pressure.trend.trend", src: (json) => validateProperty(json.trend.trend) },
-    { signalK: "environment.outside.pressure.trend.severity", src: (json) => validateProperty(json.trend.severity) },
-    { signalK: "environment.outside.pressure.trend.from", src: (json) => validateProperty(json.trend.from.meta.value) },
-    { signalK: "environment.outside.pressure.trend.to", src: (json) => validateProperty(json.trend.to.meta.value) },
-    { signalK: "environment.outside.pressure.trend.period", src: (json) => validateProperty(json.trend.period) },
-
-    { signalK: "environment.outside.pressure.prediction.pressureOnly", src: (json) => validateProperty(json.predictions.pressureOnly) },
-    { signalK: "environment.outside.pressure.prediction.quadrant", src: (json) => validateProperty(json.predictions.quadrant) },
-    { signalK: "environment.outside.pressure.prediction.season", src: (json) => validateProperty(json.predictions.season) },
-    { signalK: "environment.outside.pressure.prediction.beaufort", src: (json) => validateProperty(json.predictions.beaufort.force) },
-    { signalK: "environment.outside.pressure.prediction.beaufort.description", src: (json) => validateProperty(json.predictions.beaufort.force.description) },
-    { signalK: "environment.outside.pressure.prediction.front.tendency", src: (json) => validateProperty(json.predictions.front.tendency) },
-    { signalK: "environment.outside.pressure.prediction.front.prognose", src: (json) => validateProperty(json.predictions.front.prognose) },
-    { signalK: "environment.outside.pressure.prediction.front.wind", src: (json) => validateProperty(json.predictions.front.wind) },
-
-    { signalK: "environment.outside.pressure.system", src: (json) => validateProperty(json.system.name) },
-    { signalK: "environment.outside.pressure.ASL", src: (json) => validateProperty(json.lastPressure.value) },
-
-    { signalK: "environment.outside.pressure.1hr", src: (json) => history(json, 1) },
-    { signalK: "environment.outside.pressure.3hr", src: (json) => history(json, 3) },
-    { signalK: "environment.outside.pressure.6hr", src: (json) => history(json, 6) },
-    { signalK: "environment.outside.pressure.12hr", src: (json) => history(json, 12) },
-    { signalK: "environment.outside.pressure.24hr", src: (json) => history(json, 24) },
-    { signalK: "environment.outside.pressure.48hr", src: (json) => history(json, 48) }
-]
-
-const history = (json, hour) => { validateProperty(json.history.find((h) => h.hour === hour)) }
-
-const defaultPropertyValue = null;
-function mapProperties(json) {
-
-    const deltaUpdates = [];
-    propertyMap.forEach((p) => {
-        try {
-            let value = (json !== null) ? p.src(json) : defaultPropertyValue;
-            let deltaUpdate = buildDeltaUpdate(p.signalK, value);
-            deltaUpdates.push(deltaUpdate);
-        } catch {
-            console.debug("Fail to read property: " + p.signalK);
-        }
-    });
-    return deltaUpdates;
-}
-
-function validateProperty(value, defaultValue = defaultPropertyValue) {
-    return (value === null || value === undefined) ? defaultValue : value;
-}
-
-function buildDeltaUpdate(path, value) {
-    return {
-        path: path,
-        value: value
-    }
-}
 
 function clear() {
     barometerTrend.clear();
@@ -180,7 +124,7 @@ function clear() {
 }
 
 function preLoad() {
-    return mapProperties(null);
+    return map.mapProperties(null);
 }
 
 function hasTWDWithinOneMinute() {
