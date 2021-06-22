@@ -58,7 +58,7 @@ module.exports = function (app) {
                 default: 0
             }
         }
-    }
+    }    
 
     /**
      * 
@@ -72,14 +72,14 @@ module.exports = function (app) {
                 updates: [
                     {
                         timestamp: new Date().toISOString(),
-                        values: deltaValues.values,
+                        values: deltaValues,
                         meta,
-                    },
-                ],
+                    }
+                ]
             };
 
-            app.handleMessage(plugin.id, signalk_delta);
             console.debug(JSON.stringify(signalk_delta));
+            app.handleMessage(plugin.id, signalk_delta);
         }
     }
 
