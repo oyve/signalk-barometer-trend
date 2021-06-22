@@ -1,16 +1,14 @@
-'use strict'
-const assert = require('assert');
-const barometer = require('../barometer');
+// 'use strict'
+// const assert = require('assert');
+// const barometer = require('../barometer');
 
-// describe("GetProperty Tests", function () {
-//     describe("Tendency should equal", function () {
+// describe("Barometer Tests", function () {
+//     describe("Set Altitude Correction", function () {
 //         it("It should equal", function () {
 //             //arrange
-// 			let expected = "XYZ";
-//             let forecast = { predictions: { front: { tendency: expected } }}
-//             let path = "predictions.front.tendency";
+// 			let expected = 4;
 //             //act
-//             let actual = barometer.getProperty(forecast, path);
+//             barometer.setAltitudeCorrection(expected);
 //             //assert
 //             assert.strictEqual(actual, expected);
 //         });

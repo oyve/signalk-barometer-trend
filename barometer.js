@@ -2,22 +2,36 @@
 const barometerTrend = require('barometer-trend');
 const map = require('./map');
 const lodash = require('lodash');
+
+const secondsToMilliseconds = (seconds) => seconds * 1000;
+const DEFAULT_SAMPLE_RATE = secondsToMilliseconds(60);
+const DEFAULT_ALTITUDE_CORRECTION = 0;
+
+let SAMPLE_RATE = DEFAULT_SAMPLE_RATE; //default
+let ALTITUDE_CORRECTION = DEFAULT_ALTITUDE_CORRECTION;
+
 /**
  * 
  * @param {number} rate Pressure sample rate in milliseconds
  */
 function setSampleRate(rate) {
+    if(!rate) return;
     if (rate > 3600) rate = secondsToMilliseconds(3600);
-    if (rate < 60) rate = secondsToMilliseconds(60);
+    if (rate < 60) rate = DEFAULT_SAMPLE_RATE;
 
     SAMPLE_RATE = rate;
+    return rate;
 }
 
-const minutesToMilliseconds = (minutes) => secondsToMilliseconds(minutes * 60);
-const secondsToMilliseconds = (seconds) => seconds * 1000;
-
-let SAMPLE_RATE = secondsToMilliseconds(60); //default
-let ALTITUDE_CORRECTION = 0;
+/**
+ * 
+ * @param {number} altitude Set Altitude correction in meters
+ * @returns 
+ */
+function setAltitudeCorrection(altitude) {
+    if(!altitude) return;
+    ALTITUDE_CORRECTION = altitude
+}
 
 const SUBSCRIPTIONS = [
     { path: 'environment.wind.directionTrue', period: secondsToMilliseconds(30), policy: "instant", minPeriod: secondsToMilliseconds(60), handle: (value) => onTrueWindUpdated(value) },
@@ -44,8 +58,8 @@ const TEMPLATE_LATEST = {
     }
 }
 
-let latest = lodash.cloneDeep(TEMPLATE_LATEST);;
-
+let latest = null;
+latest = lodash.cloneDeep(TEMPLATE_LATEST);
 
 /**
  * 
@@ -65,9 +79,9 @@ function onDeltasUpdate(deltas) {
 
             if (onDeltaUpdated !== null) {
                 let updates = onDeltaUpdated.handle(value.value);
-                console.log("Handled value for " + value.path + ": " + u);
-                if (updates !== null && updates !== undefined) {
-                    updates.values.forEach((u) => deltaValues.push(u));
+                console.debug("Handle " + value.path + ": " + value.value);
+                if (updates) {
+                    updates.values.forEach((update) => deltaValues.push(update));
                 }
             }
         });
@@ -118,6 +132,8 @@ function onPressureUpdated(value) {
 function clear() {
     barometerTrend.clear();
     latest = lodash.cloneDeep(TEMPLATE_LATEST);
+    setAltitudeCorrection(DEFAULT_ALTITUDE_CORRECTION);
+    setSampleRate(DEFAULT_SAMPLE_RATE);
 }
 
 function preLoad() {
@@ -149,5 +165,5 @@ module.exports = {
     preLoad,
     getLatest: () => latest,
     setSampleRate,
-    setAltitudeCorrection: (altitude) => ALTITUDE_CORRECTION = altitude
+    setAltitudeCorrection
 }
