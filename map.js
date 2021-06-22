@@ -1,9 +1,9 @@
-// const meta = require('./meta.json');
+ const meta = require('./meta.json');
 
-const meta = async () => {
-    const response = await fetch("./meta.json");
-    return await response.json();
-}
+// const meta = async () => {
+//     const response = await fetch("./meta.json");
+//     return await response.json();
+// }
 
 const propertyMap = [
     { signalK: "environment.outside.pressure.trend.tendency", src: (json) => validateProperty(json.trend.tendency) },
@@ -35,7 +35,7 @@ const propertyMap = [
 
 const history = (json, hour) => { validateProperty(json.history.find((h) => h.hour === hour)) }
 
-const defaultPropertyValue = null;
+const defaultPropertyValue = "Waiting...";
 function mapProperties(json) {
 
     const deltaUpdates = [];
@@ -44,7 +44,7 @@ function mapProperties(json) {
             let value = (json !== null) ? p.src(json) : defaultPropertyValue;
             let deltaUpdate = buildDeltaUpdate(p.signalK, value);
             deltaUpdates.push(deltaUpdate);
-            console.debug("Delta update: " + deltaUpdate);
+            //console.debug("Delta update: " + JSON.stringify(deltaUpdate));
         } catch {
             console.debug("Fail to read property: " + p.signalK);
         }
@@ -54,7 +54,7 @@ function mapProperties(json) {
 }
 
 function validateProperty(value, defaultValue = defaultPropertyValue) {
-    value ? defaultValue : value;
+    return (value !== null || value !== undefined) ? value : defaultValue;
 }
 
 function buildDeltaUpdate(path, value) {

@@ -7,19 +7,19 @@ const secondsToMilliseconds = (seconds) => seconds * 1000;
 const DEFAULT_SAMPLE_RATE = secondsToMilliseconds(60);
 const DEFAULT_ALTITUDE_CORRECTION = 0;
 
-let SAMPLE_RATE = DEFAULT_SAMPLE_RATE; //default
-let ALTITUDE_CORRECTION = DEFAULT_ALTITUDE_CORRECTION;
+let sampleRate = DEFAULT_SAMPLE_RATE; //default
+let altitudeCorrection = DEFAULT_ALTITUDE_CORRECTION;
 
 /**
  * 
  * @param {number} rate Pressure sample rate in milliseconds
  */
-function setSampleRate(rate) {
+function setSampleRate(rate = DEFAULT_SAMPLE_RATE) {
     if(!rate) return;
     if (rate > 3600) rate = secondsToMilliseconds(3600);
     if (rate < 60) rate = DEFAULT_SAMPLE_RATE;
 
-    SAMPLE_RATE = rate;
+    sampleRate = rate;
     return rate;
 }
 
@@ -28,9 +28,9 @@ function setSampleRate(rate) {
  * @param {number} altitude Set Altitude correction in meters
  * @returns 
  */
-function setAltitudeCorrection(altitude) {
-    if(!altitude) return;
-    ALTITUDE_CORRECTION = altitude
+function setAltitudeCorrection(altitude = DEFAULT_ALTITUDE_CORRECTION) {
+    if(altitude === null && altitude === undefined) return;
+    altitudeCorrection = altitude
 }
 
 const SUBSCRIPTIONS = [
@@ -38,7 +38,7 @@ const SUBSCRIPTIONS = [
     { path: 'navigation.position', period: secondsToMilliseconds(30), policy: "instant", minPeriod: secondsToMilliseconds(60), handle: (value) => onPositionUpdated(value) },
     { path: 'navigation.gnss.antennaAltitude', period: secondsToMilliseconds(30), policy: "instant", minPeriod: secondsToMilliseconds(60), handle: (value) => onAltitudeUpdated(value) },
     { path: 'environment.outside.temperature', period: secondsToMilliseconds(30), policy: "instant", minPeriod: secondsToMilliseconds(60), handle: (value) => onTemperatureUpdated(value) },
-    { path: 'environment.outside.pressure', period: SAMPLE_RATE, handle: (value) => onPressureUpdated(value) }
+    { path: 'environment.outside.pressure', period: sampleRate, handle: (value) => onPressureUpdated(value) }
 ];
 
 const TEMPLATE_LATEST = {
@@ -79,7 +79,8 @@ function onDeltasUpdate(deltas) {
 
             if (onDeltaUpdated !== null) {
                 let updates = onDeltaUpdated.handle(value.value);
-                console.debug("Handle " + value.path + ": " + value.value);
+                console.debug("Handle: " + JSON.stringify(value));
+
                 if (updates) {
                     updates.values.forEach((update) => deltaValues.push(update));
                 }
@@ -100,7 +101,7 @@ function onTemperatureUpdated(value) {
 }
 
 function onAltitudeUpdated(value) {
-    latest.altitude.value = value + ALTITUDE_CORRECTION;
+    latest.altitude.value = value + altitudeCorrection;
 }
 
 function onTrueWindUpdated(value) {
@@ -114,7 +115,7 @@ function onTrueWindUpdated(value) {
  * @returns {Array<[{path:path, value:value}]>} Delta JSON-array of updates
  */
 function onPressureUpdated(value) {
-    if (value === null || value === undefined) throw new Error("Cannot add null value");
+    if (!value) return;
 
     barometerTrend.addPressure(
         new Date(),

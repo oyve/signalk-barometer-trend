@@ -64,7 +64,7 @@ module.exports = function (app) {
      * @param {Array<[{path:path, value:value}]>} deltaValues 
      */
     function sendDelta(deltaValues) {
-        app.handleMessage(plugin.id, {
+        let message = {
             context: "vessels." + app.selfIdself,
             updates: [
                 {
@@ -72,7 +72,9 @@ module.exports = function (app) {
                     ...deltaValues
                 }
             ]
-        })
+        };
+        console.debug("Updates: " + JSON.stringify(message));
+        app.handleMessage(plugin.id, message);
     }
 
     return plugin;

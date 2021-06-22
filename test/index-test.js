@@ -53,7 +53,7 @@ describe("Barometer Tests", function () {
                 //act
                 let actual = barometer.preLoad();
                 //assert
-                assert.strictEqual(actual.values.find((f) => f.path === getPath("trend.tendency")).value, null);
+                assert.strictEqual(actual.values.find((f) => f.path === getPath("trend.tendency")).value, "Waiting...");
             });
         });
 
