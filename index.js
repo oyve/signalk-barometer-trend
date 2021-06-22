@@ -64,13 +64,14 @@ module.exports = function (app) {
      * @param {Array<[{path:path, value:value}]>} deltaValues 
      */
     function sendDelta(deltaValues) {
-        if (deltaValues) {
+        if (deltaValues !== null && deltaValues.values.length > 0) {
             let message = {
                 context: "vessels." + app.selfId,
                 updates: [
                     {
                         timestamp: new Date().toISOString(),
-                        deltaValues
+                        values: deltaValues.values,
+                        meta: deltaValues.meta
                     }
                 ]
             };
