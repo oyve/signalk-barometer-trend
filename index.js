@@ -10,10 +10,11 @@ module.exports = function (app) {
 
     var unsubscribes = [];
     plugin.start = function (options, restartPlugin) {
+        app.debug('Plugin started');
 
         barometer.setSampleRate(options.rate * 1000);
-
-        app.debug('Plugin started');
+        app.debug('Sample rate set to ' + options.rate + " seconds");
+        
         let localSubscription = {
             context: '*',
             subscribe: barometer.SUBSCRIPTIONS
