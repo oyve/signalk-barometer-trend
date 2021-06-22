@@ -1,6 +1,7 @@
 'use strict'
 const barometerTrend = require('barometer-trend');
 const map = require('./map');
+const lodash = require('lodash');
 /**
  * 
  * @param {number} rate Pressure sample rate in milliseconds
@@ -43,7 +44,8 @@ const TEMPLATE_LATEST = {
     }
 }
 
-let latest = TEMPLATE_LATEST;
+let latest = lodash.cloneDeep(TEMPLATE_LATEST);;
+
 
 /**
  * 
@@ -115,14 +117,7 @@ function onPressureUpdated(value) {
 
 function clear() {
     barometerTrend.clear();
-
-    //latest = ...latestTemplate;
-    latest.twd.time = null;
-    latest.twd.value = null;
-    latest.position.time = null;
-    latest.position.value = null;
-    latest.altitude.value = null;
-    latest.temperature.value = null;
+    latest = lodash.cloneDeep(TEMPLATE_LATEST);
 }
 
 function preLoad() {
