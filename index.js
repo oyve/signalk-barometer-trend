@@ -1,4 +1,5 @@
 'use strict'
+const meta = require('./meta.json');
 const barometer = require('./barometer');
 
 module.exports = function (app) {
@@ -10,10 +11,13 @@ module.exports = function (app) {
 
     var unsubscribes = [];
     plugin.start = function (options, restartPlugin) {
+        app.debug('Plugin started');
 
         barometer.setSampleRate(options.rate * 1000);
+        app.debug('Sample rate set to ' + options.rate + " seconds");
+        barometer.setAltitudeCorrection(options.altitude);
+        app.debug('Altitude correction set to ' + options.altitude + " metre(s)");
 
-        app.debug('Plugin started');
         let localSubscription = {
             context: '*',
             subscribe: barometer.SUBSCRIPTIONS
@@ -28,7 +32,7 @@ module.exports = function (app) {
             delta => sendDelta(barometer.onDeltasUpdate(delta))
         );
 
-        sendDelta(barometer.preLoad());
+        // sendDelta(barometer.preLoad());
     };
 
     plugin.stop = function () {
@@ -41,27 +45,42 @@ module.exports = function (app) {
     plugin.schema = {
         type: 'object',
         properties: {
-          rate: {
-            title: "Sample Rate (in seconds)",
-            description: 'Example values: 60, 600, 1200 (1, 10, 20 minutes). Min: 60, Max = 3600',
-            type: 'number',
-            default: 60
-          }
+            rate: {
+                title: "Sample Rate (seconds)",
+                description: 'Example: 60, 600, 1200 (1, 10, 20 minutes). Min: 60, Max = 3600',
+                type: 'number',
+                default: 60
+            },
+            altitude: {
+                title: "Altitude correction",
+                description: 'Altitude difference between sensor and GPS, +- meters.',
+                type: 'number',
+                default: 0
+            }
         }
-      }
+    }    
 
     /**
      * 
-     * @param {Array<[{path:path, value:value}]>} messages 
+     * @param {Array<[{path:path, value:value}]>} deltaValues 
      */
-    function sendDelta(messages) {
-        app.handleMessage('signalk-barometer-trend', {
-            updates: [
-                {
-                    values: messages
-                }
-            ]
-        })
+    function sendDelta(deltaValues) {
+        if (deltaValues !== null && deltaValues.length > 0) {
+
+            let signalk_delta = {
+                context: "vessels." + app.selfId,
+                updates: [
+                    {
+                        timestamp: new Date().toISOString(),
+                        values: deltaValues,
+                        meta,
+                    }
+                ]
+            };
+
+            //console.debug(JSON.stringify(signalk_delta));
+            app.handleMessage(plugin.id, signalk_delta);
+        }
     }
 
     return plugin;

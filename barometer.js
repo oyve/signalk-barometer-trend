@@ -1,28 +1,44 @@
 'use strict'
 const barometerTrend = require('barometer-trend');
+const map = require('./map');
+const lodash = require('lodash');
+
+const secondsToMilliseconds = (seconds) => seconds * 1000;
+const DEFAULT_SAMPLE_RATE = secondsToMilliseconds(60);
+const DEFAULT_ALTITUDE_CORRECTION = 0;
+
+let sampleRate = DEFAULT_SAMPLE_RATE; //default
+let altitudeCorrection = DEFAULT_ALTITUDE_CORRECTION;
 
 /**
  * 
  * @param {number} rate Pressure sample rate in milliseconds
  */
-function setSampleRate(rate) {
+function setSampleRate(rate = DEFAULT_SAMPLE_RATE) {
+    if(!rate) return;
     if (rate > 3600) rate = secondsToMilliseconds(3600);
-    if (rate < 60) rate = secondsToMilliseconds(60);
+    if (rate < 60) rate = DEFAULT_SAMPLE_RATE;
 
-    SAMPLE_RATE = rate;
+    sampleRate = rate;
+    return rate;
 }
 
-const minutesToMilliseconds = (minutes) => secondsToMilliseconds(minutes * 60);
-const secondsToMilliseconds = (seconds) => seconds * 1000;
-
-let SAMPLE_RATE = secondsToMilliseconds(60); //default
+/**
+ * 
+ * @param {number} altitude Set Altitude correction in meters
+ * @returns 
+ */
+function setAltitudeCorrection(altitude = DEFAULT_ALTITUDE_CORRECTION) {
+    if(altitude === null && altitude === undefined) return;
+    altitudeCorrection = altitude
+}
 
 const SUBSCRIPTIONS = [
-    { path: 'environment.wind.directionTrue', period: secondsToMilliseconds(10), policy: "instant", minPeriod: secondsToMilliseconds(60), handle: (value) => onTrueWindUpdated(value) },
-    { path: 'navigation.position', period: secondsToMilliseconds(10), policy: "instant", minPeriod: secondsToMilliseconds(60), handle: (value) => onPositionUpdated(value) },
-    { path: 'navigation.gnss.antennaAltitude', period: secondsToMilliseconds(10), policy: "instant", minPeriod: secondsToMilliseconds(60), handle: (value) => onAltitudeUpdated(value) },
-    { path: 'environment.outside.temperature', period: secondsToMilliseconds(10), policy: "instant", minPeriod: secondsToMilliseconds(60), handle: (value) => onTemperatureUpdated(value) },
-    { path: 'environment.outside.pressure', period: SAMPLE_RATE, handle: (value) => onPressureUpdated(value) }
+    { path: 'environment.wind.directionTrue', period: secondsToMilliseconds(30), policy: "instant", minPeriod: secondsToMilliseconds(60), handle: (value) => onTrueWindUpdated(value) },
+    { path: 'navigation.position', period: secondsToMilliseconds(30), policy: "instant", minPeriod: secondsToMilliseconds(60), handle: (value) => onPositionUpdated(value) },
+    { path: 'navigation.gnss.antennaAltitude', period: secondsToMilliseconds(30), policy: "instant", minPeriod: secondsToMilliseconds(60), handle: (value) => onAltitudeUpdated(value) },
+    { path: 'environment.outside.temperature', period: secondsToMilliseconds(30), policy: "instant", minPeriod: secondsToMilliseconds(60), handle: (value) => onTemperatureUpdated(value) },
+    { path: 'environment.outside.pressure', period: sampleRate, handle: (value) => onPressureUpdated(value) }
 ];
 
 const TEMPLATE_LATEST = {
@@ -42,7 +58,8 @@ const TEMPLATE_LATEST = {
     }
 }
 
-let latest = TEMPLATE_LATEST;
+let latest = null;
+latest = lodash.cloneDeep(TEMPLATE_LATEST);
 
 /**
  * 
@@ -54,7 +71,7 @@ function onDeltasUpdate(deltas) {
         throw "Deltas cannot be null";
     }
 
-    let deltaMessages = [];
+    let deltaValues = [];
 
     deltas.updates.forEach(u => {
         u.values.forEach((value) => {
@@ -62,14 +79,17 @@ function onDeltasUpdate(deltas) {
 
             if (onDeltaUpdated !== null) {
                 let updates = onDeltaUpdated.handle(value.value);
-                if (updates !== null && updates !== undefined) {
-                    updates.forEach((u) => deltaMessages.push(u));
+                console.debug("Handle: " + JSON.stringify(value));
+
+                if (updates && updates.length > 0) {
+                    //console.debug(JSON.stringify(updates));
+                    updates.forEach((update) => deltaValues.push(update));
                 }
             }
         });
     });
 
-    return deltaMessages;
+    return deltaValues;
 }
 
 function onPositionUpdated(value) {
@@ -82,7 +102,7 @@ function onTemperatureUpdated(value) {
 }
 
 function onAltitudeUpdated(value) {
-    latest.altitude.value = value;
+    latest.altitude.value = value + altitudeCorrection;
 }
 
 function onTrueWindUpdated(value) {
@@ -96,7 +116,7 @@ function onTrueWindUpdated(value) {
  * @returns {Array<[{path:path, value:value}]>} Delta JSON-array of updates
  */
 function onPressureUpdated(value) {
-    if (value === null || value === undefined) throw new Error("Cannot add null value");
+    if (!value) return;
 
     barometerTrend.addPressure(
         new Date(),
@@ -105,82 +125,17 @@ function onPressureUpdated(value) {
         latest.temperature.value,
         hasTWDWithinOneMinute() ? latest.twd.value : null);
 
-    let forecast = barometerTrend.getPredictions(isNorthernHemisphere());
+    let json = barometerTrend.getPredictions(isNorthernHemisphere());
 
-    return forecast !== null ? mapProperties(forecast) : null;
+    return map.mapProperties(json);
 }
 
-const propertyMap = [
-    { signalK: "environment.outside.pressure.trend.tendency", src: (json) => validateProperty(json.trend.tendency) },
-    { signalK: "environment.outside.pressure.trend.trend", src: (json) => validateProperty(json.trend.trend) },
-    { signalK: "environment.outside.pressure.trend.severity", src: (json) => validateProperty(json.trend.severity) },
-    { signalK: "environment.outside.pressure.trend.from", src: (json) => validateProperty(json.trend.from.meta.value) },
-    { signalK: "environment.outside.pressure.trend.to", src: (json) => validateProperty(json.trend.to.meta.value) },
-    { signalK: "environment.outside.pressure.trend.period", src: (json) => validateProperty(json.trend.period) },
-
-    { signalK: "environment.outside.pressure.prediction.pressureOnly", src: (json) => validateProperty(json.predictions.pressureOnly) },
-    { signalK: "environment.outside.pressure.prediction.quadrant", src: (json) => validateProperty(json.predictions.quadrant) },
-    { signalK: "environment.outside.pressure.prediction.season", src: (json) => validateProperty(json.predictions.season) },
-    { signalK: "environment.outside.pressure.prediction.beaufort", src: (json) => validateProperty(json.predictions.beaufort.force) },
-    { signalK: "environment.outside.pressure.prediction.beaufort.description", src: (json) => validateProperty(json.predictions.beaufort.force.description) },
-    { signalK: "environment.outside.pressure.prediction.front.tendency", src: (json) => validateProperty(json.predictions.front.tendency) },
-    { signalK: "environment.outside.pressure.prediction.front.prognose", src: (json) => validateProperty(json.predictions.front.prognose) },
-    { signalK: "environment.outside.pressure.prediction.front.wind", src: (json) => validateProperty(json.predictions.front.wind) },
-
-    { signalK: "environment.outside.pressure.system", src: (json) => validateProperty(json.system.name) },
-    { signalK: "environment.outside.pressure.ASL", src: (json) => validateProperty(json.lastPressure.value) },
-
-    { signalK: "environment.outside.pressure.1hr", src: (json) => history(json, 1) },
-    { signalK: "environment.outside.pressure.3hr", src: (json) => history(json, 3) },
-    { signalK: "environment.outside.pressure.6hr", src: (json) => history(json, 6) },
-    { signalK: "environment.outside.pressure.12hr", src: (json) => history(json, 12) },
-    { signalK: "environment.outside.pressure.24hr", src: (json) => history(json, 24) },
-    { signalK: "environment.outside.pressure.48hr", src: (json) => history(json, 48) }
-]
-
-const history = (json, hour) => { validateProperty(json.history.find((h) => h.hour === hour)) }
-
-const defaultPropertyValue = null;
-function mapProperties(json) {
-
-    const deltaUpdates = [];
-    propertyMap.forEach((p) => {
-        try {
-            let value = (json !== null) ? p.src(json) : defaultPropertyValue;
-            let deltaUpdate = buildDeltaUpdate(p.signalK, value);
-            deltaUpdates.push(deltaUpdate);
-        } catch {
-            console.debug("Fail to read property: " + p.signalK);
-        }
-    });
-    return deltaUpdates;
-}
-
-function validateProperty(value, defaultValue = defaultPropertyValue) {
-    return (value === null || value === undefined) ? defaultValue : value;
-}
-
-function buildDeltaUpdate(path, value) {
-    return {
-        path: path,
-        value: value
-    }
-}
 
 function clear() {
     barometerTrend.clear();
-
-    //latest = ...latestTemplate;
-    latest.twd.time = null;
-    latest.twd.value = null;
-    latest.position.time = null;
-    latest.position.value = null;
-    latest.altitude.value = null;
-    latest.temperature.value = null;
-}
-
-function preLoad() {
-    return mapProperties(null);
+    latest = lodash.cloneDeep(TEMPLATE_LATEST);
+    setAltitudeCorrection(DEFAULT_ALTITUDE_CORRECTION);
+    setSampleRate(DEFAULT_SAMPLE_RATE);
 }
 
 function hasTWDWithinOneMinute() {
@@ -205,7 +160,8 @@ module.exports = {
     hasPositionWithinOneMinute,
     onDeltasUpdate,
     clear,
-    preLoad,
-    latest,
-    setSampleRate
+    //preLoad,
+    getLatest: () => latest,
+    setSampleRate,
+    setAltitudeCorrection
 }
