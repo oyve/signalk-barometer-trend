@@ -78,7 +78,7 @@ module.exports = function (app) {
                 ]
             };
 
-            console.debug(JSON.stringify(signalk_delta));
+            //console.debug(JSON.stringify(signalk_delta));
             app.handleMessage(plugin.id, signalk_delta);
         }
     }
