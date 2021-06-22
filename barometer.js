@@ -20,10 +20,10 @@ let SAMPLE_RATE = secondsToMilliseconds(60); //default
 let ALTITUDE_CORRECTION = 0;
 
 const SUBSCRIPTIONS = [
-    { path: 'environment.wind.directionTrue', period: secondsToMilliseconds(10), policy: "instant", minPeriod: secondsToMilliseconds(60), handle: (value) => onTrueWindUpdated(value) },
-    { path: 'navigation.position', period: secondsToMilliseconds(10), policy: "instant", minPeriod: secondsToMilliseconds(60), handle: (value) => onPositionUpdated(value) },
-    { path: 'navigation.gnss.antennaAltitude', period: secondsToMilliseconds(10), policy: "instant", minPeriod: secondsToMilliseconds(60), handle: (value) => onAltitudeUpdated(value) },
-    { path: 'environment.outside.temperature', period: secondsToMilliseconds(10), policy: "instant", minPeriod: secondsToMilliseconds(60), handle: (value) => onTemperatureUpdated(value) },
+    { path: 'environment.wind.directionTrue', period: secondsToMilliseconds(30), policy: "instant", minPeriod: secondsToMilliseconds(60), handle: (value) => onTrueWindUpdated(value) },
+    { path: 'navigation.position', period: secondsToMilliseconds(30), policy: "instant", minPeriod: secondsToMilliseconds(60), handle: (value) => onPositionUpdated(value) },
+    { path: 'navigation.gnss.antennaAltitude', period: secondsToMilliseconds(30), policy: "instant", minPeriod: secondsToMilliseconds(60), handle: (value) => onAltitudeUpdated(value) },
+    { path: 'environment.outside.temperature', period: secondsToMilliseconds(30), policy: "instant", minPeriod: secondsToMilliseconds(60), handle: (value) => onTemperatureUpdated(value) },
     { path: 'environment.outside.pressure', period: SAMPLE_RATE, handle: (value) => onPressureUpdated(value) }
 ];
 
@@ -57,7 +57,7 @@ function onDeltasUpdate(deltas) {
         throw "Deltas cannot be null";
     }
 
-    let deltaMessages = [];
+    let deltaValues = [];
 
     deltas.updates.forEach(u => {
         u.values.forEach((value) => {
@@ -67,13 +67,13 @@ function onDeltasUpdate(deltas) {
                 let updates = onDeltaUpdated.handle(value.value);
                 console.log("Handled value for " + value.path + ": " + u);
                 if (updates !== null && updates !== undefined) {
-                    updates.values.forEach((u) => deltaMessages.push(u));
+                    updates.values.forEach((u) => deltaValues.push(u));
                 }
             }
         });
     });
 
-    return deltaMessages;
+    return deltaValues;
 }
 
 function onPositionUpdated(value) {
@@ -147,5 +147,7 @@ module.exports = {
     onDeltasUpdate,
     clear,
     preLoad,
+    getLatest: () => latest,
+    setSampleRate,
     setAltitudeCorrection: (altitude) => ALTITUDE_CORRECTION = altitude
 }

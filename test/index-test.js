@@ -155,7 +155,7 @@ describe("Barometer Tests", function () {
             //act
             barometer.onDeltasUpdate(createDeltaMockTemperature(expected));
             //assert
-            assert.strictEqual(barometer.latest.temperature.value, expected);
+            assert.strictEqual(barometer.getLatest().temperature.value, expected);
         });
 
         it("Has altitude", function () {
@@ -165,17 +165,7 @@ describe("Barometer Tests", function () {
             //act
             barometer.onDeltasUpdate(createDeltaMockAltitude(expected));
             //assert
-            assert.strictEqual(barometer.latest.altitude.value, expected);
-        });
-
-        it("Has altitude", function () {
-            //arrange
-            const expected = 100;
-            barometer.clear();
-            //act
-            barometer.onDeltasUpdate(createDeltaMockAltitude(expected));
-            //assert
-            assert.strictEqual(barometer.latest.altitude.value, expected);
+            assert.strictEqual(barometer.getLatest().altitude.value, expected);
         });
     });
 
