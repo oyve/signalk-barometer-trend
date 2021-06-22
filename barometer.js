@@ -63,6 +63,7 @@ function onDeltasUpdate(deltas) {
 
             if (onDeltaUpdated !== null) {
                 let updates = onDeltaUpdated.handle(value.value);
+                console.log("Handled value for " + value.path + ": " + u);
                 if (updates !== null && updates !== undefined) {
                     updates.values.forEach((u) => deltaMessages.push(u));
                 }
