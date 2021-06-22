@@ -16,6 +16,7 @@ const minutesToMilliseconds = (minutes) => secondsToMilliseconds(minutes * 60);
 const secondsToMilliseconds = (seconds) => seconds * 1000;
 
 let SAMPLE_RATE = secondsToMilliseconds(60); //default
+let ALTITUDE_CORRECTION = 0;
 
 const SUBSCRIPTIONS = [
     { path: 'environment.wind.directionTrue', period: secondsToMilliseconds(10), policy: "instant", minPeriod: secondsToMilliseconds(60), handle: (value) => onTrueWindUpdated(value) },
@@ -82,7 +83,7 @@ function onTemperatureUpdated(value) {
 }
 
 function onAltitudeUpdated(value) {
-    latest.altitude.value = value;
+    latest.altitude.value = value + ALTITUDE_CORRECTION;
 }
 
 function onTrueWindUpdated(value) {
@@ -150,6 +151,5 @@ module.exports = {
     onDeltasUpdate,
     clear,
     preLoad,
-    latest,
-    setSampleRate
+    setAltitudeCorrection: (altitude) => ALTITUDE_CORRECTION = altitude
 }

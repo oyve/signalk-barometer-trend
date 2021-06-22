@@ -14,6 +14,8 @@ module.exports = function (app) {
 
         barometer.setSampleRate(options.rate * 1000);
         app.debug('Sample rate set to ' + options.rate + " seconds");
+        barometer.setAltitudeCorrection(options.altitude);
+        app.debug('Altitude correction set to ' + options.altitude + " metre(s)");
         
         let localSubscription = {
             context: '*',
@@ -47,6 +49,12 @@ module.exports = function (app) {
                 description: 'Example values: 60, 600, 1200 (1, 10, 20 minutes). Min: 60, Max = 3600',
                 type: 'number',
                 default: 60
+            },
+            altitude: {
+                title: "Altitude correction",
+                description: 'Altitude difference between sensor and GPS, +- meters.',
+                type: 'number',
+                default: 0
             }
         }
     }
