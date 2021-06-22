@@ -82,6 +82,7 @@ function onDeltasUpdate(deltas) {
                 console.debug("Handle: " + JSON.stringify(value));
 
                 if (updates) {
+                    console.debug(JSON.stringify(updates));
                     updates.values.forEach((update) => deltaValues.push(update));
                 }
             }

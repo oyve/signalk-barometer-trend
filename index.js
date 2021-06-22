@@ -16,7 +16,7 @@ module.exports = function (app) {
         app.debug('Sample rate set to ' + options.rate + " seconds");
         barometer.setAltitudeCorrection(options.altitude);
         app.debug('Altitude correction set to ' + options.altitude + " metre(s)");
-        
+
         let localSubscription = {
             context: '*',
             subscribe: barometer.SUBSCRIPTIONS
@@ -64,17 +64,19 @@ module.exports = function (app) {
      * @param {Array<[{path:path, value:value}]>} deltaValues 
      */
     function sendDelta(deltaValues) {
-        let message = {
-            context: "vessels." + app.selfId,
-            updates: [
-                {
-                    timestamp: new Date().toISOString(),
-                    ...deltaValues
-                }
-            ]
-        };
-        console.debug("Updates: " + JSON.stringify(message));
-        app.handleMessage(plugin.id, message);
+        if (deltaValues) {
+            let message = {
+                context: "vessels." + app.selfId,
+                updates: [
+                    {
+                        timestamp: new Date().toISOString(),
+                        deltaValues
+                    }
+                ]
+            };
+            console.debug("Updates: " + JSON.stringify(message));
+            app.handleMessage(plugin.id, message);
+        }
     }
 
     return plugin;
