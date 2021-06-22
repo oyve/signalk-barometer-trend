@@ -65,7 +65,7 @@ module.exports = function (app) {
      */
     function sendDelta(deltaValues) {
         let message = {
-            context: "vessels." + app.selfIdself,
+            context: "vessels." + app.selfId,
             updates: [
                 {
                     timestamp: new Date().toISOString(),
