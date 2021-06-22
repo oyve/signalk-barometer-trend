@@ -1,4 +1,5 @@
 'use strict'
+const meta = require('./meta.json');
 const barometer = require('./barometer');
 
 module.exports = function (app) {
@@ -31,7 +32,7 @@ module.exports = function (app) {
             delta => sendDelta(barometer.onDeltasUpdate(delta))
         );
 
-        sendDelta(barometer.preLoad());
+        // sendDelta(barometer.preLoad());
     };
 
     plugin.stop = function () {
@@ -65,18 +66,20 @@ module.exports = function (app) {
      */
     function sendDelta(deltaValues) {
         if (deltaValues !== null && deltaValues.values.length > 0) {
-            let message = {
+
+            let signalk_delta = {
                 context: "vessels." + app.selfId,
                 updates: [
                     {
                         timestamp: new Date().toISOString(),
                         values: deltaValues.values,
-                        meta: deltaValues.meta
-                    }
-                ]
+                        meta,
+                    },
+                ],
             };
-            console.debug("Updates: " + JSON.stringify(message));
-            app.handleMessage(plugin.id, message);
+
+            app.handleMessage(plugin.id, signalk_delta);
+            console.debug(JSON.stringify(signalk_delta));
         }
     }
 

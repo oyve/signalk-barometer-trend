@@ -81,9 +81,9 @@ function onDeltasUpdate(deltas) {
                 let updates = onDeltaUpdated.handle(value.value);
                 console.debug("Handle: " + JSON.stringify(value));
 
-                if (updates) {
+                if (updates && updates.length > 0) {
                     console.debug(JSON.stringify(updates));
-                    updates.values.forEach((update) => deltaValues.push(update));
+                    updates.forEach((update) => deltaValues.push(update));
                 }
             }
         });
@@ -127,7 +127,7 @@ function onPressureUpdated(value) {
 
     let json = barometerTrend.getPredictions(isNorthernHemisphere());
 
-    return json !== null ? map.mapProperties(json) : null;
+    return map.mapProperties(json);
 }
 
 
@@ -136,10 +136,6 @@ function clear() {
     latest = lodash.cloneDeep(TEMPLATE_LATEST);
     setAltitudeCorrection(DEFAULT_ALTITUDE_CORRECTION);
     setSampleRate(DEFAULT_SAMPLE_RATE);
-}
-
-function preLoad() {
-    return map.mapProperties(null);
 }
 
 function hasTWDWithinOneMinute() {
@@ -164,7 +160,7 @@ module.exports = {
     hasPositionWithinOneMinute,
     onDeltasUpdate,
     clear,
-    preLoad,
+    //preLoad,
     getLatest: () => latest,
     setSampleRate,
     setAltitudeCorrection

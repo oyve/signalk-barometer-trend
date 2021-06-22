@@ -1,10 +1,3 @@
- const meta = require('./meta.json');
-
-// const meta = async () => {
-//     const response = await fetch("./meta.json");
-//     return await response.json();
-// }
-
 const propertyMap = [
     { signalK: "environment.outside.pressure.trend.tendency", src: (json) => validateProperty(json.trend.tendency) },
     { signalK: "environment.outside.pressure.trend.trend", src: (json) => validateProperty(json.trend.trend) },
@@ -50,7 +43,7 @@ function mapProperties(json) {
         }
     });
 
-    return deltaUpdates.length > 0 ? { values: deltaUpdates, meta: meta } : null;
+    return deltaUpdates.length > 0 ? deltaUpdates : null;
 }
 
 function validateProperty(value, defaultValue = defaultPropertyValue) {

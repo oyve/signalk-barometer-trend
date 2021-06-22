@@ -47,15 +47,15 @@ describe("Barometer Tests", function () {
             assert.notStrictEqual(actual, null);
         });
 
-        describe("preLoad", function () {
-            it("it should be waiting", function () {
-                //arrange
-                //act
-                let actual = barometer.preLoad();
-                //assert
-                assert.strictEqual(actual.values.find((f) => f.path === getPath("trend.tendency")).value, "Waiting...");
-            });
-        });
+        // describe("preLoad", function () {
+        //     it("it should be waiting", function () {
+        //         //arrange
+        //         //act
+        //         let actual = barometer.preLoad();
+        //         //assert
+        //         assert.strictEqual(actual.values.find((f) => f.path === getPath("trend.tendency")).value, "Waiting...");
+        //     });
+        // });
 
         it("Subscription should equal", function () {
             //arrange
