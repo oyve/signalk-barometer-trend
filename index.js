@@ -65,7 +65,7 @@ module.exports = function (app) {
      * @param {Array<[{path:path, value:value}]>} deltaValues 
      */
     function sendDelta(deltaValues) {
-        if (deltaValues !== null && deltaValues.values.length > 0) {
+        if (deltaValues !== null && deltaValues.length > 0) {
 
             let signalk_delta = {
                 context: "vessels." + app.selfId,
