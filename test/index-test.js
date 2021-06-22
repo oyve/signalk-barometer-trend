@@ -198,6 +198,75 @@ describe("Barometer Tests", function () {
         
         });
     });
+
+    describe("Set Sample Rate", function () {
+        it("It should equal", function () {
+            //arrange
+            barometer.clear();
+			let expected = 80;
+            //act
+            var actual = barometer.setSampleRate(80);
+            //assert
+            assert.strictEqual(actual, expected);
+        });
+        it("It should equal under threshold", function () {
+            //arrange
+            barometer.clear();
+			let expected = 3600 * 1000;
+            //act
+            var actual = barometer.setSampleRate(3601);
+            //assert
+            assert.strictEqual(actual, expected);
+        });
+        it("It should equal above threshold", function () {
+            //arrange
+            barometer.clear();
+			let expected = 60 * 1000;
+            //act
+            var actual = barometer.setSampleRate(59);
+            //assert
+            assert.strictEqual(actual, expected);
+        });
+    });
+
+    describe("Set Altitude Correction", function () {
+        it("It should equal positive", function () {
+            //arrange
+            barometer.clear();
+			let expected = 104;
+            //act
+            barometer.setAltitudeCorrection(4);
+            barometer.onDeltasUpdate(createDeltaMockAltitude(100));
+            let actual = barometer.getLatest().altitude.value;
+            //assert
+            assert.strictEqual(actual, expected);
+        });
+
+        it("It should equal negative", function () {
+            //arrange
+            barometer.clear();
+			let expected = 96;
+            //act
+            barometer.setAltitudeCorrection(-4);
+            barometer.onDeltasUpdate(createDeltaMockAltitude(100));
+            let actual = barometer.getLatest().altitude.value;
+            //assert
+            assert.strictEqual(actual, expected);
+        });
+
+        it("It should not equal", function () {
+            //arrange
+            barometer.clear();
+			let expected = 100;
+            //act
+            barometer.setAltitudeCorrection(null);
+            barometer.setAltitudeCorrection(undefined);
+            barometer.onDeltasUpdate(createDeltaMockAltitude(100));
+            let actual = barometer.getLatest().altitude.value;
+            //assert
+            assert.strictEqual(actual, expected);
+        });
+	});
 });
 
 function getPath(path) {
