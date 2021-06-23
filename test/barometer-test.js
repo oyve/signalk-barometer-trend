@@ -183,22 +183,6 @@ describe("Barometer Tests", function () {
         });
     });
 
-    describe("ASL Tests", function () {
-        it("ASL is correct", function () {
-            //arrange
-            barometer.clear();
-            const expected = 102649;
-            barometer.onDeltasUpdate(createDeltaMockPressure(101500));
-            barometer.onDeltasUpdate(createDeltaMockTemperature(30 + 273.15));
-            barometer.onDeltasUpdate(createDeltaMockAltitude(100));
-            //act
-            let actual = barometer.onDeltasUpdate(createDeltaMockPressure(101500));
-            //assert
-            assert.strictEqual(actual.find((f) => f.path === getPath("ASL")).value, expected);
-        
-        });
-    });
-
     describe("Set Sample Rate", function () {
         it("It should equal", function () {
             //arrange

@@ -66,17 +66,6 @@
             }
         },
         {
-            "path": "environment.outside.pressure.ASL",
-            "value": {
-                "units": "Pa",
-                "type": "number",
-                "description": "Pressure above sea level",
-                "displayName": "Pressure above sea level",
-                "shortName": "Pressure above sea level",
-                "example": 101325
-            }
-        },
-        {
             "path": "environment.outside.pressure.trend.period",
             "value": {
                 "units": "s",

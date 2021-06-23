@@ -16,7 +16,6 @@ const propertyMap = [
     { signalK: "environment.outside.pressure.prediction.front.wind", src: (json) => validateProperty(json.predictions.front.wind) },
 
     { signalK: "environment.outside.pressure.system", src: (json) => validateProperty(json.system.name) },
-    { signalK: "environment.outside.pressure.ASL", src: (json) => validateProperty(json.lastPressure.value) },
 
     { signalK: "environment.outside.pressure.1hr", src: (json) => history(json, 1) },
     { signalK: "environment.outside.pressure.3hr", src: (json) => history(json, 3) },
@@ -43,7 +42,7 @@ function mapProperties(json) {
 }
 
 const history = (json, hour) => { validateProperty(json.history.find((h) => h.hour === hour).pressure) }
-const defaultPropertyValue = "Waiting...";
+const defaultPropertyValue = null;
 
 function validateProperty(value, defaultValue = defaultPropertyValue) {
     return (value !== null || value !== undefined) ? value : defaultValue;
