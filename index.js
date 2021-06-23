@@ -1,5 +1,6 @@
 'use strict'
 const meta = require('./meta.json');
+const schema = require('./schema.json');
 const barometer = require('./barometer');
 
 module.exports = function (app) {
@@ -41,29 +42,8 @@ module.exports = function (app) {
         app.debug('Plugin stopped');
     };
 
+    plugin.schema = schema;
 
-    plugin.schema = {
-        type: 'object',
-        properties: {
-            rate: {
-                title: "Sample Rate (seconds)",
-                description: 'Example: 60, 600, 1200 (1, 10, 20 minutes). Min: 60, Max = 3600',
-                type: 'number',
-                default: 60
-            },
-            altitude: {
-                title: "Altitude correction",
-                description: 'Altitude difference between sensor and GPS, +- meters.',
-                type: 'number',
-                default: 0
-            }
-        }
-    }    
-
-    /**
-     * 
-     * @param {Array<[{path:path, value:value}]>} deltaValues 
-     */
     function sendDelta(deltaValues) {
         if (deltaValues !== null && deltaValues.length > 0) {
 

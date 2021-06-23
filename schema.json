@@ -1,0 +1,17 @@
+[{
+	"type": "object",
+	"properties": {
+		"rate": {
+			"title": "Pressure Sample Rate (s)",
+			"description": "Example: 60, 600, 1200 (1, 10, 20 minutes). Min: 60 (default), Max = 3600",
+			"type": "number",
+			"default": 60
+		},
+		"altitude": {
+			"title": "Altitude correction (m)",
+			"description": "Difference between sensor and GPS, +- meters.",
+			"type": "number",
+			"default": 0
+		}
+	}
+}]
