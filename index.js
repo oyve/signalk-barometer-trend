@@ -7,8 +7,8 @@ module.exports = function (app) {
     var plugin = {};
 
     plugin.id = 'signalk-barometer-trend';
-    plugin.name = 'SignalK Barometer Trend';
-    plugin.description = 'Calculates barometric trend over time with prediction';
+    plugin.name = 'Barometer Trend';
+    plugin.description = 'Calculate tendency, trend and weather predictions of barometric pressure';
 
     var unsubscribes = [];
     plugin.start = function (options, restartPlugin) {
@@ -32,8 +32,6 @@ module.exports = function (app) {
             },
             delta => sendDelta(barometer.onDeltasUpdate(delta))
         );
-
-        // sendDelta(barometer.preLoad());
     };
 
     plugin.stop = function () {
@@ -42,7 +40,7 @@ module.exports = function (app) {
         app.debug('Plugin stopped');
     };
 
-    plugin.schema = schema;
+    plugin.schema = schema[0];
 
     function sendDelta(deltaValues) {
         if (deltaValues !== null && deltaValues.length > 0) {

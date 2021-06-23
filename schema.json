@@ -8,8 +8,8 @@
 			"default": 60
 		},
 		"altitude": {
-			"title": "Altitude correction (m)",
-			"description": "Difference between sensor and GPS, +- meters.",
+			"title": "Altitude offset (m)",
+			"description": "Offset between sensor and GPS",
 			"type": "number",
 			"default": 0
 		}
