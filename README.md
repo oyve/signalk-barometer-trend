@@ -4,12 +4,17 @@
 Calculate pressure trend and get weather predictions from a barometer over time. Are there foul weather on the way?
 
 ## Prerequisites
-- A barometer connected to SignalK, i.e. the [bme680](https://www.google.com/search?client=firefox-b-d&q=bme680), outputting the SignalK-sentence `'environment.outside.pressure'` to SignalK
-- SignalK GPS-coordinates to determinate northern|southern hemisphere
-- Temperature sensor and GPS-altitude for increased precision (optional)
+- A barometer connected to SignalK, i.e. the [bme680](https://www.google.com/search?client=firefox-b-d&q=bme680), outputting `'environment.outside.pressure'` to SignalK
+- SignalK GPS-coordinates to determinate if located in northern | southern hemisphere (default: northern)
+- Optional: Temperature sensor and GPS-altitude for increased precision
 
-## Install
+## Install & setup
 Install the plugin through the SignalK plugin interface. 'Enable' it through the Plugin Config interface.
+
+![SignalK Plugin Config](/images/pluginConfig.png)
+
+- Edit the Sample Rate for more | fewer readings. This may result in a more | less "jumpy" barometer-trends.
+- Edit the Altitude Offset to adjust for any differences between your sensor altitude and GPS-coordinates.
 
 ## Use
 It might take a couple of minutes before the plugin show any data, as it need to collect pressure readings to calculate a trend. The plugin will not change the pressure readings you observe in SignalK - only internally for calculations.
@@ -22,6 +27,8 @@ The plugin outputs several new SignalK-values, such as:
 'environment.outside.pressure.prediction.pressureOnly'
 ...
 ```
+
+![SignalK Data Browser](/images/signalk_barometer_trend.png)
 
 ## Alarms
 Based on the severity value it's possible to set an alarm, using the [Simple Notification](https://github.com/sbender9/signalk-simple-notifications)-plugin (see severity table below).
@@ -36,10 +43,8 @@ FALLING: | RISING:
 (-3) FALLING.QUICKLY | (3) RISING.QUICKLY
 (-4) FALLING.RAPIDLY | (4) RISING.RAPIDLY
 
-![SignalK Data Browser](/images/signalk_barometer_trend.png)
-
 ## Contribute
-Please feel free to contribute to this plugin by creating a *Pull Request* including test code.
+Please feel free to contribute to this plugin by creating an issue and/or a *Pull Request* including test code.
 
 ## Disclaimer
 - See all disclaimers by reading the README at the GitHub project ['barometer-trend'](https://github.com/oyve/barometer-trend), also by the same author, to understand the limitations of this plugin.
