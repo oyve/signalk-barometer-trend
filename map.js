@@ -48,7 +48,7 @@ function mapProperties(json) {
 
 const history = (json, hour) => { 
     let pressure = json.history.find((h) => h.hour === hour).pressure;
-    return pressure !== null ? validateProperty(pressure) : null;
+    return pressure !== null ? validateProperty(pressure.meta.value) : null;
 }
 
 const defaultPropertyValue = null;
