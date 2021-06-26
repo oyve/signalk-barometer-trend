@@ -1,60 +1,47 @@
 'use strict'
 const barometerTrend = require('barometer-trend');
+const map = require('./map');
+const lodash = require('lodash');
 
-const ENVIRONMENT_OUTSIDE_PRESSURE = 'environment.outside.pressure';
-const ENVIRONMENT_OUTSIDE_TEMPERATURE = 'environment.outside.temperature';
-const ENVIRONMENT_WIND_TWD = 'environment.wind.directionTrue';
-const NAVIGATION_POSITION = 'navigation.position';
-const NAVIGATION_ALTITUDE = 'navigation.gnss.antennaAltitude';
+const secondsToMilliseconds = (seconds) => seconds * 1000;
+const DEFAULT_SAMPLE_RATE = secondsToMilliseconds(60);
+const DEFAULT_ALTITUDE_CORRECTION = 0;
 
-const ONE_MINUTE_MILLISECONDS = 60 * 1000;
-const TEN_SECONDS_MILLISECONDS = 10 * 1000;
+let sampleRate = DEFAULT_SAMPLE_RATE; //default
+let altitudeCorrection = DEFAULT_ALTITUDE_CORRECTION;
 
-const KELVIN = 273.15;
+/**
+ * 
+ * @param {number} rate Pressure sample rate in milliseconds
+ */
+function setSampleRate(rate = DEFAULT_SAMPLE_RATE) {
+    if(!rate) return;
+    if (rate > 3600) rate = secondsToMilliseconds(3600);
+    if (rate < 60) rate = DEFAULT_SAMPLE_RATE;
 
-const SUBSCRIPTIONS = [
-    { path: ENVIRONMENT_WIND_TWD, period: TEN_SECONDS_MILLISECONDS, policy: "instant", minPeriod: ONE_MINUTE_MILLISECONDS },
-    { path: NAVIGATION_POSITION, period: ONE_MINUTE_MILLISECONDS, policy: "instant", minPeriod: ONE_MINUTE_MILLISECONDS },
-    { path: NAVIGATION_ALTITUDE, period: ONE_MINUTE_MILLISECONDS, policy: "instant", minPeriod: ONE_MINUTE_MILLISECONDS },
-    { path: ENVIRONMENT_OUTSIDE_TEMPERATURE, period: ONE_MINUTE_MILLISECONDS, policy: "instant", minPeriod: ONE_MINUTE_MILLISECONDS },
-    { path: ENVIRONMENT_OUTSIDE_PRESSURE, period: ONE_MINUTE_MILLISECONDS }
-];
-
-const pathPrefix = "environment.outside.pressure.";
-
-const OUTPUT_PATHS = {
-    "TREND_TENDENCY_COMBINED": pathPrefix + "trend",
-    "TREND_TENDENCY": pathPrefix + "trend.tendency",
-    "TREND_TREND": pathPrefix + "trend.trend",
-    "TREND_SEVERITY": pathPrefix + "trend.severity",
-    "TREND_DIFFERENCE_FROM": pathPrefix + "trend.from",
-    "TREND_DIFFERENCE_TO": pathPrefix + "trend.to",
-    "TREND_DIFFERENCE": pathPrefix + "trend.difference",
-    "TREND_DIFFERENCE_RATIO": pathPrefix + "trend.difference.ratio",
-    "TREND_DIFFERENCE_PERIOD": pathPrefix + "trend.difference.period",
-
-    "PREDICTION_PRESSURE": pathPrefix + "prediction.pressureOnly",
-    "PREDICTION_QUADRANT": pathPrefix + "prediction.quadrant",
-    "PREDICTION_SEASON": pathPrefix + "prediction.season",
-    "PREDICTION_BEAUFORT_FORCE": pathPrefix + "prediction.beaufort",
-    "PREDICTION_BEAUFORT_DESCRIPTION": pathPrefix + "prediction.beaufort.description",
-
-    "PREDICTION_FRONT_TENDENCY": pathPrefix + "prediction.front.tendency",
-    "PREDICTION_FRONT_PROGNOSE": pathPrefix + "prediction.front.prognose",
-    "PREDICTION_FRONT_WIND": pathPrefix + "prediction.front.wind",
-
-    "ASL": pathPrefix + "ASL",
-    "SYSTEM": pathPrefix + "system",
-
-    "HISTORY_1HR": pathPrefix + "1hr",
-    "HISTORY_3HR": pathPrefix + "3hr",
-    "HISTORY_6HR": pathPrefix + "6hr",
-    "HISTORY_12HR": pathPrefix + "12hr",
-    "HISTORY_24HR": pathPrefix + "24hr",
-    "HISTORY_48HR": pathPrefix + "48hr"
+    sampleRate = rate;
+    return rate;
 }
 
-const latest = {
+/**
+ * 
+ * @param {number} altitude Set Altitude correction in meters
+ * @returns 
+ */
+function setAltitudeCorrection(altitude = DEFAULT_ALTITUDE_CORRECTION) {
+    if(altitude === null && altitude === undefined) return;
+    altitudeCorrection = altitude
+}
+
+const SUBSCRIPTIONS = [
+    { path: 'environment.wind.directionTrue', period: secondsToMilliseconds(30), policy: "instant", minPeriod: secondsToMilliseconds(60), handle: (value) => onTrueWindUpdated(value) },
+    { path: 'navigation.position', period: secondsToMilliseconds(30), policy: "instant", minPeriod: secondsToMilliseconds(60), handle: (value) => onPositionUpdated(value) },
+    { path: 'navigation.gnss.antennaAltitude', period: secondsToMilliseconds(30), policy: "instant", minPeriod: secondsToMilliseconds(60), handle: (value) => onAltitudeUpdated(value) },
+    { path: 'environment.outside.temperature', period: secondsToMilliseconds(30), policy: "instant", minPeriod: secondsToMilliseconds(60), handle: (value) => onTemperatureUpdated(value) },
+    { path: 'environment.outside.pressure', period: sampleRate, handle: (value) => onPressureUpdated(value) }
+];
+
+const TEMPLATE_LATEST = {
     twd: {
         time: null,
         value: null
@@ -71,13 +58,8 @@ const latest = {
     }
 }
 
-const pathHandles = [
-    { path: ENVIRONMENT_OUTSIDE_PRESSURE, handle: (value) => onPressureUpdated(value) },
-    { path: ENVIRONMENT_WIND_TWD, handle: (value) => onTrueWindUpdated(value) },
-    { path: NAVIGATION_POSITION, handle: (value) => onPositionUpdated(value) },
-    { path: NAVIGATION_ALTITUDE, handle: (value) => onAltitudeUpdated(value) },
-    { path: ENVIRONMENT_OUTSIDE_TEMPERATURE, handle: (value) => onTemperatureUpdated(value) }
-];
+let latest = null;
+latest = lodash.cloneDeep(TEMPLATE_LATEST);
 
 /**
  * 
@@ -89,22 +71,25 @@ function onDeltasUpdate(deltas) {
         throw "Deltas cannot be null";
     }
 
-    let deltaMessages = [];
+    let deltaValues = [];
 
     deltas.updates.forEach(u => {
         u.values.forEach((value) => {
-            let onDeltaUpdated = pathHandles.find((d) => d.path === value.path);
+            let onDeltaUpdated = SUBSCRIPTIONS.find((d) => d.path === value.path);
 
             if (onDeltaUpdated !== null) {
                 let updates = onDeltaUpdated.handle(value.value);
-                if (updates !== null && updates !== undefined) {
-                    updates.forEach((u) => deltaMessages.push(u));
+                console.debug("Handle: " + JSON.stringify(value));
+
+                if (updates && updates.length > 0) {
+                    //console.debug(JSON.stringify(updates));
+                    updates.forEach((update) => deltaValues.push(update));
                 }
             }
         });
     });
 
-    return deltaMessages;
+    return deltaValues;
 }
 
 function onPositionUpdated(value) {
@@ -113,11 +98,11 @@ function onPositionUpdated(value) {
 }
 
 function onTemperatureUpdated(value) {
-    latest.temperature.value = toKelvinIfCelcius(value);
+    latest.temperature.value = value;
 }
 
 function onAltitudeUpdated(value) {
-    latest.altitude.value = value;
+    latest.altitude.value = value + altitudeCorrection;
 }
 
 function onTrueWindUpdated(value) {
@@ -127,124 +112,41 @@ function onTrueWindUpdated(value) {
 
 /**
  * 
- * @param {number} pressure Pressure
- * @returns returns Pascal if pressure is recieved in hPa
- */
-function toPaIfHpa(pressure) {
-    if (Math.trunc(pressure).toString().length <= 4) {
-        pressure *= 100;
-    }
-
-    return pressure;
-}
-
-/**
- * 
- * @param {number} temperature Temperature
- * @returns returns Kelvin if temperature is recieved in Celcius
- */
-function toKelvinIfCelcius(temperature) {
-    if (Math.trunc(temperature).toString().length <= 2) {
-        temperature += KELVIN;
-    }
-
-    return temperature;
-}
-
-/**
- * 
  * @param {number} value Pressure value in (Pa) Pascal.
  * @returns {Array<[{path:path, value:value}]>} Delta JSON-array of updates
  */
 function onPressureUpdated(value) {
-    if (value == null) throw new Error("Cannot add null value");
+    if (!value) return;
 
     barometerTrend.addPressure(
         new Date(),
-        toPaIfHpa(value),
+        value,
         latest.altitude.value,
         latest.temperature.value,
         hasTWDWithinOneMinute() ? latest.twd.value : null);
 
-    let forecast = barometerTrend.getPredictions(isNortherHemisphere());
+    let json = barometerTrend.getPredictions(isNorthernHemisphere());
 
-    return forecast !== null ? prepareUpdate(forecast) : null;
+    return map.mapProperties(json);
 }
 
-function prepareUpdate(forecast) {
-    const waitingMessage = "Waiting..";
-    return [
-        buildDeltaUpdate(OUTPUT_PATHS.TREND_TENDENCY_COMBINED, forecast !== null ? forecast.trend.tendency + "." + forecast.trend.trend : waitingMessage),
-        buildDeltaUpdate(OUTPUT_PATHS.TREND_TENDENCY, forecast !== null ? forecast.trend.tendency : waitingMessage),
-        buildDeltaUpdate(OUTPUT_PATHS.TREND_TREND, forecast !== null ? forecast.trend.trend : waitingMessage),
-        buildDeltaUpdate(OUTPUT_PATHS.TREND_SEVERITY, forecast !== null ? forecast.trend.severity : waitingMessage),
-
-        buildDeltaUpdate(OUTPUT_PATHS.TREND_DIFFERENCE_FROM, forecast !== null ? forecast.trend.from : waitingMessage),
-        buildDeltaUpdate(OUTPUT_PATHS.TREND_DIFFERENCE_TO, forecast !== null ? forecast.trend.to : waitingMessage),
-        buildDeltaUpdate(OUTPUT_PATHS.TREND_DIFFERENCE, forecast !== null ? forecast.trend.difference : waitingMessage),
-        buildDeltaUpdate(OUTPUT_PATHS.TREND_DIFFERENCE_PERIOD, forecast !== null ? forecast.trend.period : waitingMessage),
-        buildDeltaUpdate(OUTPUT_PATHS.TREND_DIFFERENCE_RATIO, forecast !== null ? forecast.trend.ratio : waitingMessage),
-
-        buildDeltaUpdate(OUTPUT_PATHS.PREDICTION_PRESSURE, forecast !== null ? forecast.predictions.pressureOnly : waitingMessage),
-        buildDeltaUpdate(OUTPUT_PATHS.PREDICTION_QUADRANT, forecast !== null ? forecast.predictions.quadrant : waitingMessage),
-        buildDeltaUpdate(OUTPUT_PATHS.PREDICTION_SEASON, forecast !== null ? forecast.predictions.season : waitingMessage),
-        buildDeltaUpdate(OUTPUT_PATHS.PREDICTION_BEAUFORT_FORCE, forecast !== null ? forecast.predictions.beaufort.force : waitingMessage),
-        buildDeltaUpdate(OUTPUT_PATHS.PREDICTION_BEAUFORT_DESCRIPTION, forecast !== null ? forecast.predictions.beaufort.description : waitingMessage),
-        buildDeltaUpdate(OUTPUT_PATHS.PREDICTION_FRONT_TENDENCY, forecast !== null ? forecast.predictions.front.tendency : waitingMessage),
-        buildDeltaUpdate(OUTPUT_PATHS.PREDICTION_FRONT_PROGNOSE, forecast !== null ? forecast.predictions.front.prognose : waitingMessage),
-        buildDeltaUpdate(OUTPUT_PATHS.PREDICTION_FRONT_WIND, forecast !== null ? forecast.predictions.front.wind : waitingMessage),
-
-        buildDeltaUpdate(OUTPUT_PATHS.SYSTEM, forecast !== null ? forecast.system.name : null),
-        buildDeltaUpdate(OUTPUT_PATHS.ASL, forecast !== null ? forecast.lastPressure.value : null),
-
-        buildDeltaUpdate(OUTPUT_PATHS.HISTORY_1HR, forecast !== null ? getHistory(forecast, 1) : waitingMessage),
-        buildDeltaUpdate(OUTPUT_PATHS.HISTORY_3HR, forecast !== null ? getHistory(forecast, 3) : waitingMessage),
-        buildDeltaUpdate(OUTPUT_PATHS.HISTORY_6HR, forecast !== null ? getHistory(forecast, 6) : waitingMessage),
-        buildDeltaUpdate(OUTPUT_PATHS.HISTORY_12HR, forecast !== null ? getHistory(forecast, 12) : waitingMessage),
-        buildDeltaUpdate(OUTPUT_PATHS.HISTORY_24HR, forecast !== null ? getHistory(forecast, 24) : waitingMessage),
-        buildDeltaUpdate(OUTPUT_PATHS.HISTORY_48HR, forecast !== null ? getHistory(forecast, 48) : waitingMessage),
-    ];
-}
-
-function getHistory(forecast, hour) {
-    let history = forecast.history.find((h) => h.hour === hour);
-
-    if(history === null || history.pressure === null) return null;
-
-    return history.pressure.value;
-}
-
-function buildDeltaUpdate(path, value) {
-    return {
-        path: path,
-        value: value
-    }
-}
 
 function clear() {
     barometerTrend.clear();
-
-    latest.twd.time = null;
-    latest.twd.value = null;
-    latest.position.time = null;
-    latest.position.value = null;
-    latest.altitude.value = null;
-    latest.temperature.value = null;
-}
-
-function preLoad() {
-    return prepareUpdate(null);
+    latest = lodash.cloneDeep(TEMPLATE_LATEST);
+    setAltitudeCorrection(DEFAULT_ALTITUDE_CORRECTION);
+    setSampleRate(DEFAULT_SAMPLE_RATE);
 }
 
 function hasTWDWithinOneMinute() {
-    return latest.twd.time !== null ? (Date.now() - latest.twd.time) <= ONE_MINUTE_MILLISECONDS : false;
+    return latest.twd.time !== null ? (Date.now() - latest.twd.time) <= secondsToMilliseconds(60) : false;
 }
 
 function hasPositionWithinOneMinute() {
-    return latest.position.time !== null ? (Date.now() - latest.position.time) <= ONE_MINUTE_MILLISECONDS : false;
+    return latest.position.time !== null ? (Date.now() - latest.position.time) <= secondsToMilliseconds(60) : false;
 }
 
-function isNortherHemisphere() {
+function isNorthernHemisphere() {
     let position = hasPositionWithinOneMinute() ? latest.position.value : null;
     if (position === null) return true; //default to northern hemisphere
 
@@ -253,14 +155,13 @@ function isNortherHemisphere() {
 
 module.exports = {
     SUBSCRIPTIONS,
-    OUTPUT_PATHS,
     hasTWDWithinOneMinute,
-    isNortherHemisphere,
+    isNortherHemisphere: isNorthernHemisphere,
     hasPositionWithinOneMinute,
     onDeltasUpdate,
     clear,
-    preLoad,
-    latest,
-    toKelvinIfCelcius,
-    toPaIfHpa
+    //preLoad,
+    getLatest: () => latest,
+    setSampleRate,
+    setAltitudeCorrection
 }

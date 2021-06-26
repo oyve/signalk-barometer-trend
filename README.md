@@ -1,38 +1,37 @@
 ![Node.js Package](https://github.com/oyve/signalk-barometer-trend/workflows/Node.js%20Package/badge.svg)
 
 # signalk-barometer-trend
-Calculate the pressure trend of a barometer. Are there foul weather on the way?
+Calculate pressure trend and get weather predictions from a barometer over time. Are there foul weather on the way?
 
-## Install & Use
-Note: To use this plugin you need at minimum a barometer connected to SignalK, i.e. the [bme680](https://www.google.com/search?client=firefox-b-d&q=bme680), outputting the SignalK-sentence `'environment.outside.pressure'`.
+## Prerequisites
+- A barometer, i.e. the [bme680](https://www.google.com/search?client=firefox-b-d&q=bme680), outputting `'environment.outside.pressure'` to SignalK
+- Optional: GPS-coordinates to determinate if located in northern | southern hemisphere (default: northern)
+- Optional: Temperature sensor and GPS-altitude for increased precision
 
-Install the plugin through the SignalK plugin interface.\
-After installation you may want to 'Activate' it through the SignalK Plugin Config interface.
+## Install & setup
+Install the plugin through the SignalK plugin interface. 'Enable' it through the Plugin Config interface.
 
-The plugin will output several new SignalK-values, such as:
+![SignalK Plugin Config](/images/pluginConfig.png)
+
+- Sample Rate: More | fewer readings. This may result in a more | less "jumpy" barometer-trend. (Default = 60).
+- Altitude Offset: Ajust for any differences between your sensor altitude to GPS-altitude. (Default = 0).
+
+## Use
+It might take a couple of minutes before the plugin show any data, as it need to collect pressure readings to calculate a trend. The plugin will not change the pressure readings you observe in SignalK - only internally for calculations.
+
+The plugin outputs several new SignalK-values, such as:
+
 ```
 'environment.outside.pressure.trend.tendency'
 'environment.outside.pressure.trend.severity'
-'environment.outside.pressure.prediction.quadrant'
+'environment.outside.pressure.prediction.pressureOnly'
+...
 ```
 
-Based on the severity value it's possible to set an alarm, i.e. with the [Simple Notification](https://github.com/sbender9/signalk-simple-notifications)-plugin (see table below).
-
-If `'environment.outside.temperature'` and `'navigation.gnss.antennaAltitude'` (GPS altitude) is present, the plugin will make calculations by adjusting the pressure to sea level. Defaults are `altitude = 0` (sea level) and `temperature = 15C`.\
-(Note: The plugin will not change the pressure readings you observe in SignalK - just internally for calculations.)
-
-PS: It might take a couple of minutes before the plugin show any data, as it need to collect pressure readings to calculate a trend. The plugin is setup to read the pressure every 1 minute. Pressure readings older than three hours will be discarded.
-
-Note: If `'environment.outside.pressure.prediction.front.*` shows "N/A" - this means no front pressure pattern has been detected. It might take up to three hours to see anything, if at all.
-
-## More details
-
-For more details please visit [github.com/oyve/barometer-trend](https://github.com/oyve/barometer-trend) library.
-
 ![SignalK Data Browser](/images/signalk_barometer_trend.png)
-![SignalK Data Browser](/images/signalk_barometer_trend2.png)
 
-## Possible severity values are (in parentheses)
+## Alarms
+Based on the severity value it's possible to set an alarm, using the [Simple Notification](https://github.com/sbender9/signalk-simple-notifications)-plugin (see severity table below).
 
 `'environment.outside.pressure.trend.severity'`
 
@@ -44,10 +43,8 @@ FALLING: | RISING:
 (-3) FALLING.QUICKLY | (3) RISING.QUICKLY
 (-4) FALLING.RAPIDLY | (4) RISING.RAPIDLY
 
-Based on the severity value you could set an alarm, i.e. with the [Simple Notification](https://github.com/sbender9/signalk-simple-notifications)-plugin.
-
 ## Contribute
-Please feel free to contribute to this plugin by creating a *Pull Request* including test code.
+Please feel free to contribute to this plugin by creating an issue and/or a *Pull Request* including test code.
 
 ## Disclaimer
 - See all disclaimers by reading the README at the GitHub project ['barometer-trend'](https://github.com/oyve/barometer-trend), also by the same author, to understand the limitations of this plugin.
@@ -56,8 +53,8 @@ Please feel free to contribute to this plugin by creating a *Pull Request* inclu
 * [GitHub: barometer-trend](https://github.com/oyve/barometer-trend)
 * [SignalK](http://signalk.org/)
 
-## A real world example
-This is actual data while developing the plugin. A tropical wave, OT-48, was moving through the Caribbean creating local heavy rainfall and stormy wind in Guadeloupe.
+## Real world example
+This is actual data while developing the plugin. A tropical wave, OT-48, was moving through the Caribbean creating local heavy rainfall and stormy winds in Guadeloupe.
 
 ![SigK Pressure Trend](/images/sigk_pressuretrend.jpg)
 

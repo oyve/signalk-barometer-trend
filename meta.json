@@ -1,0 +1,101 @@
+    [
+        {
+            "path": "environment.outside.pressure.1hr",
+            "value": {
+                "units": "Pa",
+                "type": "number",
+                "description": "Pressure 1 hour ago",
+                "displayName": "Pressure 1 hour ago",
+                "shortName": "Pressure 1 hour ago",
+                "example": 101325
+            }
+        },
+        {
+            "path": "environment.outside.pressure.3hr",
+            "value": {
+                "units": "Pa",
+                "type": "number",
+                "description": "Pressure 3 hours ago",
+                "displayName": "Pressure 3 hours ago",
+                "shortName": "Pressure 3 hours ago",
+                "example": 101325
+            }
+        },
+        {
+            "path": "environment.outside.pressure.6hr",
+            "value": {
+                "units": "Pa",
+                "type": "number",
+                "description": "Pressure 6 hours ago",
+                "displayName": "Pressure 6 hours ago",
+                "shortName": "Pressure 6 hours ago",
+                "example": 101325
+            }
+        },
+        {
+            "path": "environment.outside.pressure.12hr",
+            "value": {
+                "units": "Pa",
+                "type": "number",
+                "description": "Pressure 12 hours ago",
+                "displayName": "Pressure 12 hours ago",
+                "shortName": "Pressure 12 hours ago",
+                "example": 101325
+            }
+        },
+        {
+            "path": "environment.outside.pressure.24hr",
+            "value": {
+                "units": "Pa",
+                "type": "number",
+                "description": "Pressure 24 hours ago",
+                "displayName": "Pressure 24 hours ago",
+                "shortName": "Pressure 24 hours ago",
+                "example": 101325
+            }
+        },
+        {
+            "path": "environment.outside.pressure.48hr",
+            "value": {
+                "units": "Pa",
+                "type": "number",
+                "description": "Pressure 48 hours ago",
+                "displayName": "Pressure 48 hours ago",
+                "shortName": "Pressure 48 hours ago",
+                "example": 101325
+            }
+        },
+        {
+            "path": "environment.outside.pressure.trend.period",
+            "value": {
+                "units": "s",
+                "type": "number",
+                "description": "Trend period, 60 or 180 minutes ",
+                "displayName": "Trend period",
+                "shortName": "Trend period",
+                "example": 3600
+            }
+        },
+        {
+            "path": "environment.outside.pressure.trend.period.from",
+            "value": {
+                "units": "Pa",
+                "type": "number",
+                "description": "Trend period start pressure",
+                "displayName": "Period from pressure",
+                "shortName": "Trend from",
+                "example": 101325
+            }
+        },
+        {
+            "path": "environment.outside.pressure.trend.period.to",
+            "value": {
+                "units": "Pa",
+                "type": "number",
+                "description": "Trend period end pressure",
+                "displayName": "Period to pressure",
+                "shortName": "Trend to",
+                "example": 101325
+            }
+        }
+    ]
