@@ -13,8 +13,8 @@ Install the plugin through the SignalK plugin interface. 'Enable' it through the
 
 ![SignalK Plugin Config](/images/pluginConfig.png)
 
-- Edit the Sample Rate for more | fewer readings. This may result in a more | less "jumpy" barometer-trend.
-- Edit the Altitude Offset to adjust for any differences between your sensor altitude and GPS-coordinates.
+- Edit the Sample Rate for more | fewer readings. This may result in a more | less "jumpy" barometer-trend. (Default = 60)
+- Edit the Altitude Offset to adjust for any differences between your sensor altitude and GPS-altitude. (Default = 0)
 
 ## Use
 It might take a couple of minutes before the plugin show any data, as it need to collect pressure readings to calculate a trend. The plugin will not change the pressure readings you observe in SignalK - only internally for calculations.
