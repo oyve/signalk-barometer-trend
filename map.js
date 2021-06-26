@@ -36,24 +36,28 @@ function mapProperties(json) {
     propertyMap.forEach((p) => {
         try {
             let value = (json !== null) ? p.src(json) : defaultPropertyValue;
-            let deltaUpdate = buildDeltaUpdate(p.signalK, value);
+            let deltaUpdate = buildDeltaPath(p.signalK, value);
             deltaUpdates.push(deltaUpdate);
         } catch {
-            console.debug("Fail to read property: " + p.signalK);
+            console.debug("Failed to map property: " + p.signalK);
         }
     });
 
     return deltaUpdates.length > 0 ? deltaUpdates : null;
 }
 
-const history = (json, hour) => { return validateProperty(json.history.find((h) => h.hour === hour).pressure.meta.value) }
+const history = (json, hour) => { 
+    let pressure = json.history.find((h) => h.hour === hour).pressure;
+    return pressure !== null ? validateProperty(pressure) : null;
+}
+
 const defaultPropertyValue = null;
 
 function validateProperty(value, defaultValue = defaultPropertyValue) {
     return (value !== null || value !== undefined) ? value : defaultValue;
 }
 
-function buildDeltaUpdate(path, value) {
+function buildDeltaPath(path, value) {
     return {
         path: path,
         value: value

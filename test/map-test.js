@@ -11,7 +11,6 @@ describe("Barometer Tests", function () {
 			let expected = 102110;
 			//act
 			let actual = map.mapProperties(jsonMock);
-
 			//assert
 			assert.strictEqual(actual.find((m) => m.path === 'environment.outside.pressure.1hr').value, expected);
 		});
@@ -20,7 +19,6 @@ describe("Barometer Tests", function () {
 			let expected = 102210;
 			//act
 			let actual = map.mapProperties(jsonMock);
-
 			//assert
 			assert.strictEqual(actual.find((m) => m.path === 'environment.outside.pressure.3hr').value, expected);
 		});
@@ -29,7 +27,6 @@ describe("Barometer Tests", function () {
 			let expected = 102310;
 			//act
 			let actual = map.mapProperties(jsonMock);
-
 			//assert
 			assert.strictEqual(actual.find((m) => m.path === 'environment.outside.pressure.6hr').value, expected);
 		});
@@ -38,7 +35,6 @@ describe("Barometer Tests", function () {
 			let expected = 102410;
 			//act
 			let actual = map.mapProperties(jsonMock);
-
 			//assert
 			assert.strictEqual(actual.find((m) => m.path === 'environment.outside.pressure.12hr').value, expected);
 		});
@@ -47,7 +43,6 @@ describe("Barometer Tests", function () {
 			let expected = 102510;
 			//act
 			let actual = map.mapProperties(jsonMock);
-
 			//assert
 			assert.strictEqual(actual.find((m) => m.path === 'environment.outside.pressure.24hr').value, expected);
 		});
@@ -56,7 +51,6 @@ describe("Barometer Tests", function () {
 			let expected = 102610;
 			//act
 			let actual = map.mapProperties(jsonMock);
-
 			//assert
 			assert.strictEqual(actual.find((m) => m.path === 'environment.outside.pressure.48hr').value, expected);
 		});
@@ -64,7 +58,7 @@ describe("Barometer Tests", function () {
 });
 
 
-const mockPressure = (pressure = 102100) => {
+const pressureMock = (pressure = 102100) => {
 	return {
 		datetime: new Date(),
 		value: pressure,
@@ -82,19 +76,19 @@ const jsonMock = {
 		tendency: 'RISING',
 		trend: 'QUICKLY',
 		severity: 3,
-		from: { meta: { value: 102100 } },
-		to: { meta: { value: 102600 } },
+		from: pressureMock(),
+		to: pressureMock(102600),
 		period: 10800
 	},
 	predictions: {
 		pressureOnly: "Pressure Only"
 	},
 	history: [
-		{ hour: 1, pressure: mockPressure(102100) },
-		{ hour: 3, pressure: mockPressure(102200) },
-		{ hour: 6, pressure: mockPressure(102300) },
-		{ hour: 12, pressure: mockPressure(102400) },
-		{ hour: 24, pressure: mockPressure(102500) },
-		{ hour: 48, pressure: mockPressure(102600) },
+		{ hour: 1, pressure: pressureMock(102100) },
+		{ hour: 3, pressure: pressureMock(102200) },
+		{ hour: 6, pressure: pressureMock(102300) },
+		{ hour: 12, pressure: pressureMock(102400) },
+		{ hour: 24, pressure: pressureMock(102500) },
+		{ hour: 48, pressure: pressureMock(102600) },
 	]
 }
