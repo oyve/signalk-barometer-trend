@@ -1,12 +1,14 @@
 'use strict'
 const assert = require('assert');
+const { getPressureAverage } = require('barometer-trend/utils');
+const barometer = require('../barometer');
 const map = require("../map");
 
 describe("Barometer Tests", function () {
 	describe("History", function () {
 		it("It should equal 1hr", function () {
 			//arrange
-			let expected = 102100;
+			let expected = 102110;
 			//act
 			let actual = map.mapProperties(jsonMock);
 
@@ -15,7 +17,7 @@ describe("Barometer Tests", function () {
 		});
 		it("It should equal 3hr", function () {
 			//arrange
-			let expected = 102200;
+			let expected = 102210;
 			//act
 			let actual = map.mapProperties(jsonMock);
 
@@ -24,7 +26,7 @@ describe("Barometer Tests", function () {
 		});
 		it("It should equal 6hr", function () {
 			//arrange
-			let expected = 102300;
+			let expected = 102310;
 			//act
 			let actual = map.mapProperties(jsonMock);
 
@@ -33,7 +35,7 @@ describe("Barometer Tests", function () {
 		});
 		it("It should equal 12hr", function () {
 			//arrange
-			let expected = 102400;
+			let expected = 102410;
 			//act
 			let actual = map.mapProperties(jsonMock);
 
@@ -42,7 +44,7 @@ describe("Barometer Tests", function () {
 		});
 		it("It should equal 24hr", function () {
 			//arrange
-			let expected = 102500;
+			let expected = 102510;
 			//act
 			let actual = map.mapProperties(jsonMock);
 
@@ -51,7 +53,7 @@ describe("Barometer Tests", function () {
 		});
 		it("It should equal 48hr", function () {
 			//arrange
-			let expected = 102600;
+			let expected = 102610;
 			//act
 			let actual = map.mapProperties(jsonMock);
 
@@ -60,6 +62,20 @@ describe("Barometer Tests", function () {
 		});
 	});
 });
+
+
+const mockPressure = (pressure = 102100) => {
+	return {
+		datetime: new Date(),
+		value: pressure,
+		meta: {
+			value: pressure + 10,
+			altitude: 50,
+			temperature: 301,
+			twd: null
+		}
+	};
+}
 
 const jsonMock = {
 	trend: {
@@ -74,11 +90,11 @@ const jsonMock = {
 		pressureOnly: "Pressure Only"
 	},
 	history: [
-		{ hour: 1, pressure: 102100 },
-		{ hour: 3, pressure: 102200 },
-		{ hour: 6, pressure: 102300 },
-		{ hour: 12, pressure: 102400 },
-		{ hour: 24, pressure: 102500 },
-		{ hour: 48, pressure: 102600 },
+		{ hour: 1, pressure: mockPressure(102100) },
+		{ hour: 3, pressure: mockPressure(102200) },
+		{ hour: 6, pressure: mockPressure(102300) },
+		{ hour: 12, pressure: mockPressure(102400) },
+		{ hour: 24, pressure: mockPressure(102500) },
+		{ hour: 48, pressure: mockPressure(102600) },
 	]
 }
