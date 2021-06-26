@@ -10,7 +10,7 @@ const propertyMap = [
     { signalK: "environment.outside.pressure.prediction.quadrant", src: (json) => validateProperty(json.predictions.quadrant) },
     { signalK: "environment.outside.pressure.prediction.season", src: (json) => validateProperty(json.predictions.season) },
     { signalK: "environment.outside.pressure.prediction.beaufort", src: (json) => validateProperty(json.predictions.beaufort.force) },
-    { signalK: "environment.outside.pressure.prediction.beaufort.description", src: (json) => validateProperty(json.predictions.beaufort.force.description) },
+    { signalK: "environment.outside.pressure.prediction.beaufort.description", src: (json) => validateProperty(json.predictions.beaufort.description) },
     { signalK: "environment.outside.pressure.prediction.front.tendency", src: (json) => validateProperty(json.predictions.front.tendency) },
     { signalK: "environment.outside.pressure.prediction.front.prognose", src: (json) => validateProperty(json.predictions.front.prognose) },
     { signalK: "environment.outside.pressure.prediction.front.wind", src: (json) => validateProperty(json.predictions.front.wind) },
@@ -25,6 +25,11 @@ const propertyMap = [
     { signalK: "environment.outside.pressure.48hr", src: (json) => history(json, 48) }
 ]
 
+/**
+ * 
+ * @param {Array<Object>} json barometer-trend (npm-package) JSON structure
+ * @returns [{path: path, value: value}]
+ */
 function mapProperties(json) {
 
     const deltaUpdates = [];
@@ -41,7 +46,7 @@ function mapProperties(json) {
     return deltaUpdates.length > 0 ? deltaUpdates : null;
 }
 
-const history = (json, hour) => { validateProperty(json.history.find((h) => h.hour === hour).pressure) }
+const history = (json, hour) => { return validateProperty(json.history.find((h) => h.hour === hour).pressure) }
 const defaultPropertyValue = null;
 
 function validateProperty(value, defaultValue = defaultPropertyValue) {
