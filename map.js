@@ -46,7 +46,7 @@ function mapProperties(json) {
     return deltaUpdates.length > 0 ? deltaUpdates : null;
 }
 
-const history = (json, hour) => { return validateProperty(json.history.find((h) => h.hour === hour).pressure) }
+const history = (json, hour) => { return validateProperty(json.history.find((h) => h.hour === hour).pressure.meta.value) }
 const defaultPropertyValue = null;
 
 function validateProperty(value, defaultValue = defaultPropertyValue) {
