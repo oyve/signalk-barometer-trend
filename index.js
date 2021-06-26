@@ -17,7 +17,7 @@ module.exports = function (app) {
         barometer.setSampleRate(options.rate * 1000);
         app.debug('Sample rate set to ' + options.rate + " seconds");
         barometer.setAltitudeCorrection(options.altitude);
-        app.debug('Altitude correction set to ' + options.altitude + " metre(s)");
+        app.debug('Altitude offset set to ' + options.altitude + " metre(s)");
 
         let localSubscription = {
             context: '*',

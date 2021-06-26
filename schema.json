@@ -9,7 +9,7 @@
 		},
 		"altitude": {
 			"title": "Altitude offset (m)",
-			"description": "Offset between sensor and GPS",
+			"description": "Sensor altitude offset to GPS altitude or default zero",
 			"type": "number",
 			"default": 0
 		}
