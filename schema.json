@@ -3,7 +3,7 @@
 	"properties": {
 		"rate": {
 			"title": "Pressure Sample Rate (s)",
-			"description": "Example: 60, 600, 1200 (1, 10, 20 minutes). Min: 60 (default), Max = 3600",
+			"description": "Example: 60, 600, 1200 (1, 10, 20 minutes). Min: 60 (default), Max = 1200",
 			"type": "number",
 			"default": 60
 		},

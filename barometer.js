@@ -16,7 +16,7 @@ let altitudeCorrection = DEFAULT_ALTITUDE_CORRECTION;
  */
 function setSampleRate(rate = DEFAULT_SAMPLE_RATE) {
     if(!rate) return;
-    if (rate > 3600) rate = secondsToMilliseconds(3600);
+    if (rate > 1200) rate = secondsToMilliseconds(3600);
     if (rate < 60) rate = DEFAULT_SAMPLE_RATE;
 
     sampleRate = rate;
