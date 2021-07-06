@@ -14,13 +14,13 @@ let altitudeCorrection = DEFAULT_ALTITUDE_CORRECTION;
  * 
  * @param {number} rate Pressure sample rate in milliseconds
  */
-function setSampleRate(rate = DEFAULT_SAMPLE_RATE) {
+function setSampleRate(rate) {
     if(!rate) return;
-    if (rate > 1200) rate = secondsToMilliseconds(3600);
-    if (rate < 60) rate = DEFAULT_SAMPLE_RATE;
+    if (rate > 1200) rate = 1200;
+    if (rate < 60) rate = 60;
 
-    sampleRate = rate;
-    return rate;
+    sampleRate = rate * 1000;
+    return sampleRate;
 }
 
 /**

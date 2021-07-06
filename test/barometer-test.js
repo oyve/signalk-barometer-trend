@@ -187,7 +187,7 @@ describe("Barometer Tests", function () {
         it("It should equal", function () {
             //arrange
             barometer.clear();
-			let expected = 80;
+			let expected = 80 * 1000;
             //act
             var actual = barometer.setSampleRate(80);
             //assert
@@ -196,9 +196,9 @@ describe("Barometer Tests", function () {
         it("It should equal under threshold", function () {
             //arrange
             barometer.clear();
-			let expected = 3600 * 1000;
+			let expected = 1200 * 1000;
             //act
-            var actual = barometer.setSampleRate(3601);
+            var actual = barometer.setSampleRate(1201);
             //assert
             assert.strictEqual(actual, expected);
         });

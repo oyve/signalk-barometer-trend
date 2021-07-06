@@ -14,7 +14,7 @@ module.exports = function (app) {
     plugin.start = function (options, restartPlugin) {
         app.debug('Plugin started');
 
-        barometer.setSampleRate(options.rate * 1000);
+        barometer.setSampleRate(options.rate);
         app.debug('Sample rate set to ' + options.rate + " seconds");
         barometer.setAltitudeCorrection(options.altitude);
         app.debug('Altitude offset set to ' + options.altitude + " metre(s)");
