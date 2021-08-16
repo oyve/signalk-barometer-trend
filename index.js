@@ -13,6 +13,7 @@ module.exports = function (app) {
     var unsubscribes = [];
     plugin.start = function (options, restartPlugin) {
         app.debug('Plugin started');
+        barometer.read(app.getDataDirPath());
 
         barometer.setSampleRate(options.rate);
         app.debug('Sample rate set to ' + options.rate + " seconds");
@@ -35,6 +36,9 @@ module.exports = function (app) {
     };
 
     plugin.stop = function () {
+        app.debug('Plugin stopping');
+        barometer.write(app.getDataDirPath());    
+
         unsubscribes.forEach(f => f());
         unsubscribes = [];
         app.debug('Plugin stopped');
@@ -56,7 +60,6 @@ module.exports = function (app) {
                 ]
             };
 
-            //console.debug(JSON.stringify(signalk_delta));
             app.handleMessage(plugin.id, signalk_delta);
         }
     }

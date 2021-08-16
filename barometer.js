@@ -2,6 +2,7 @@
 const barometerTrend = require('barometer-trend');
 const map = require('./map');
 const lodash = require('lodash');
+const storage = require('./storage');
 
 const secondsToMilliseconds = (seconds) => seconds * 1000;
 const DEFAULT_SAMPLE_RATE = secondsToMilliseconds(60);
@@ -118,7 +119,7 @@ function onTrueWindUpdated(value) {
 function onPressureUpdated(value) {
     if (!value) return;
 
-    barometerTrend.addPressure(
+    addPressure(
         new Date(),
         value,
         latest.altitude.value,
@@ -130,6 +131,9 @@ function onPressureUpdated(value) {
     return map.mapProperties(json);
 }
 
+function addPressure(datetime, value, altitude, temperature, twd) {
+    barometerTrend.addPressure(datetime, value, altitude, temperature, twd);
+}
 
 function clear() {
     barometerTrend.clear();
@@ -153,6 +157,18 @@ function isNorthernHemisphere() {
     return position.latitude < 0 ? false : true;
 }
 
+function write(path) {
+    storage.write(path, barometer.getAll());
+}
+
+function read(path) {
+    let barometerData = storage.read(path);
+
+    barometerData.forEach((bd) => {
+        addPressure(bd.datetime, bd.meta.value, bd.meta.altitude, bd.meta.temperature, bd.meta.twd);
+    });
+}
+
 module.exports = {
     SUBSCRIPTIONS,
     hasTWDWithinOneMinute,
@@ -163,5 +179,7 @@ module.exports = {
     //preLoad,
     getLatest: () => latest,
     setSampleRate,
-    setAltitudeCorrection
+    setAltitudeCorrection,
+    write,
+    read
 }
