@@ -16,7 +16,7 @@ let altitudeCorrection = DEFAULT_ALTITUDE_CORRECTION;
  * @param {number} rate Pressure sample rate in milliseconds
  */
 function setSampleRate(rate) {
-    if(!rate) return;
+    if (!rate) return;
     if (rate > 1200) rate = 1200;
     if (rate < 60) rate = 60;
 
@@ -30,7 +30,7 @@ function setSampleRate(rate) {
  * @returns 
  */
 function setAltitudeCorrection(altitude = DEFAULT_ALTITUDE_CORRECTION) {
-    if(altitude === null && altitude === undefined) return;
+    if (altitude === null && altitude === undefined) return;
     altitudeCorrection = altitude
 }
 
@@ -164,10 +164,12 @@ function write(path) {
 function read(path) {
     let barometerData = storage.read(path);
 
-    barometerData.forEach((bd) => {
-        addPressure(bd.datetime, bd.meta.value, bd.meta.altitude, bd.meta.temperature, bd.meta.twd);
-        console.debug("Added pressure: " + bd.meta.value)
-    });
+    if (barometerData) {
+        barometerData.forEach((bd) => {
+            addPressure(bd.datetime, bd.meta.value, bd.meta.altitude, bd.meta.temperature, bd.meta.twd);
+            console.debug("Added pressure: " + bd.meta.value)
+        });
+    }
 }
 
 module.exports = {
