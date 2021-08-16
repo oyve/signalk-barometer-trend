@@ -5,7 +5,7 @@ function write(path, barometer) {
 
 	let barometerDataJSON = JSON.stringify(barometerData);
 
-	fs.writeFile(getFilePath(), barometerDataJSON, (err) => {
+	fs.writeFile(getFilePath(path), barometerDataJSON, (err) => {
 		if (err) {
 			throw err;
 		}
@@ -14,11 +14,13 @@ function write(path, barometer) {
 }
 
 function getFilePath(path) {
-	return path + 'barometer.json';
+	path = path + "barometer.json";
+	console.debug("path: " + path)
+	return path;
 }
 
-function read(path, barometer) {
-	return fs.readFile(getFilePath, 'utf-8', (err, data) => {
+function read(path) {
+	return fs.readFile(getFilePath(path), 'utf-8', (err, data) => {
 		if (err) {
 			throw err;
 		}

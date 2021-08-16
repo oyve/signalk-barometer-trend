@@ -166,6 +166,7 @@ function read(path) {
 
     barometerData.forEach((bd) => {
         addPressure(bd.datetime, bd.meta.value, bd.meta.altitude, bd.meta.temperature, bd.meta.twd);
+        console.debug("Added pressure: " + bd.meta.value)
     });
 }
 
