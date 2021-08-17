@@ -14,7 +14,7 @@ function write(path, barometer) {
 }
 
 function getFilePath(path) {
-	path = path + "/barometer.json";
+	path = path + "/offline.json";
 	console.debug("path: " + path)
 	return path;
 }
