@@ -158,7 +158,8 @@ function isNorthernHemisphere() {
 }
 
 function write(path) {
-    storage.write(path, barometer.getAll());
+    let json = [{ prop: "test" },{ prop: "test2" }]
+    storage.write(path, json); //barometer.getAll()
 }
 
 function read(path) {
