@@ -1,8 +1,6 @@
 const fs = require('fs');
 
-function write(dir, barometer) {
-    let barometerData = barometer.getAll();
-
+function write(dir, barometerData) {
 	let barometerDataJSON = JSON.stringify(barometerData);
 
 	fs.writeFile(getFilePath(dir), barometerDataJSON, 'utf-8', (err) => {
@@ -23,10 +21,10 @@ function getFilePath(dir) {
 function read(dir) {
 	return fs.readFile(getFilePath(dir), 'utf-8', (err, data) => {
 		if (err) {
-			console.debug("An error occured while trying to read  barometer data from file");
+			console.debug("An error occured while trying to read barometer data from file");
 			throw err;
 		}
-	
+
 		return JSON.parse(data.toString());
 	});
 }
