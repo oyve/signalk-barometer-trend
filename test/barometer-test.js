@@ -297,12 +297,27 @@ describe("Barometer Tests", function () {
             assert.deepEqual(actual, all);
         });
 
-        it("Populate should not fail", function () {
+        it("Populate should not fail with empty array", function () {
             //arrange
             barometer.clear();
 
             const populateCallback = () => {
                 return [];
+            }
+            
+            //act
+            barometer.populate(populateCallback)
+            
+            //assert
+            //assert.strictEqual(actual, all);
+        });
+
+        it("Populate should not fail with null", function () {
+            //arrange
+            barometer.clear();
+
+            const populateCallback = () => {
+                return null;
             }
             
             //act
