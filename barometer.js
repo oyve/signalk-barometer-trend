@@ -2,7 +2,6 @@
 const barometerTrend = require('barometer-trend');
 const map = require('./map');
 const lodash = require('lodash');
-// const storage = require('./storage');
 
 const secondsToMilliseconds = (seconds) => seconds * 1000;
 const DEFAULT_SAMPLE_RATE = secondsToMilliseconds(60);
