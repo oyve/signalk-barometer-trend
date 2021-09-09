@@ -157,6 +157,10 @@ function isNorthernHemisphere() {
     return position.latitude < 0 ? false : true;
 }
 
+function getAll() {
+    return barometerTrend.getAll();
+}
+
 function persist(persistCallback) {
     let json = barometerTrend.getAll(); //[{ prop: "test" },{ prop: "test2" }]
     persistCallback(json);
@@ -187,5 +191,6 @@ module.exports = {
     setSampleRate,
     setAltitudeCorrection,
     persist,
-    populate
+    populate,
+    getAll
 }
