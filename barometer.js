@@ -2,7 +2,7 @@
 const barometerTrend = require('barometer-trend');
 const map = require('./map');
 const lodash = require('lodash');
-const storage = require('./storage');
+// const storage = require('./storage');
 
 const secondsToMilliseconds = (seconds) => seconds * 1000;
 const DEFAULT_SAMPLE_RATE = secondsToMilliseconds(60);
@@ -157,13 +157,13 @@ function isNorthernHemisphere() {
     return position.latitude < 0 ? false : true;
 }
 
-function write(path) {
+function persist(persistCallback) {
     let json = [{ prop: "test" },{ prop: "test2" }]
-    storage.write(path, json); //barometer.getAll()
+    persistCallback(json); //barometer.getAll()
 }
 
-function read(path) {
-    let barometerData = storage.read(path);
+function populate(populateCallback) {
+    let barometerData = populateCallback();
 
     if (barometerData) {
         barometerData.forEach((bd) => {
@@ -180,10 +180,9 @@ module.exports = {
     hasPositionWithinOneMinute,
     onDeltasUpdate,
     clear,
-    //preLoad,
     getLatest: () => latest,
     setSampleRate,
     setAltitudeCorrection,
-    write,
-    read
+    persist,
+    populate
 }

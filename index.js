@@ -4,7 +4,7 @@ const schema = require('./schema.json');
 const barometer = require('./barometer');
 
 module.exports = function (app) {
-    var plugin = {};
+    var plugin = { };
 
     plugin.id = 'signalk-barometer-trend';
     plugin.name = 'Barometer Trend';
@@ -13,7 +13,7 @@ module.exports = function (app) {
     var unsubscribes = [];
     plugin.start = function (options, restartPlugin) {
         app.debug('Plugin started');
-        barometer.read(app.getDataDirPath());
+        barometer.populate(read);
 
         barometer.setSampleRate(options.rate);
         app.debug('Sample rate set to ' + options.rate + " seconds");
@@ -37,7 +37,7 @@ module.exports = function (app) {
 
     plugin.stop = function () {
         app.debug('Plugin stopping');
-        barometer.write(app.getDataDirPath());    
+        barometer.persist(write);
 
         unsubscribes.forEach(f => f());
         unsubscribes = [];
@@ -62,6 +62,45 @@ module.exports = function (app) {
 
             app.handleMessage(plugin.id, signalk_delta);
         }
+    }
+
+    function getFilePath() {
+        return app.getDataDirPath() + "/offline.json";
+    }
+
+    function write(json) {
+        let content = JSON.stringify(json, null, 2);
+
+        fs.writeFile(getFilePath(), content, 'utf8', (err) => {
+            if (err) {
+                app.debug(err.stack);
+                app.error(err);
+                res.status(500);
+                res.send(err);
+                return;
+            } else {
+                res.send("Success\n")
+            }
+        });
+    }
+
+    function read() {
+        try {
+            const content = fs.readFileSync(getFilePath(), 'utf-8');
+
+            try {
+                return JSON.parse(content)
+            } catch (err) {
+                app.error("Could not parse JSON options: " + optionsAsString);
+                app.error(err.stack);
+                return { }
+            }
+        } catch (e) {
+            if (e.code && e.code === 'ENOENT') {
+                return { }
+            }
+        }
+        return null;
     }
 
     return plugin;
