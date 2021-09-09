@@ -158,8 +158,8 @@ function isNorthernHemisphere() {
 }
 
 function persist(persistCallback) {
-    let json = barometer.getAll(); //[{ prop: "test" },{ prop: "test2" }]
-    persistCallback(json); //
+    let json = barometerTrend.getAll(); //[{ prop: "test" },{ prop: "test2" }]
+    persistCallback(json);
 }
 
 function populate(populateCallback) {
