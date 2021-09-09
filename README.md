@@ -4,7 +4,7 @@
 Calculate pressure trend and get weather predictions from a barometer over time. Are there foul weather on the way?
 
 ## Prerequisites
-- A barometer, i.e. the [bme680](https://www.google.com/search?client=firefox-b-d&q=bme680), outputting `'environment.outside.pressure'` to SignalK
+- A barometer, i.e. the [bme280](https://www.google.com/search?client=firefox-b-d&q=bme280), outputting `'environment.outside.pressure'` to SignalK
 - Optional: GPS-coordinates to determinate if located in northern | southern hemisphere (default: northern)
 - Optional: Temperature sensor and GPS-altitude for increased precision
 
@@ -27,6 +27,8 @@ The plugin outputs several new SignalK-values, such as:
 'environment.outside.pressure.prediction.pressureOnly'
 ...
 ```
+
+The plugin saves all barometer readings every 5 minutes and when the plugin is disabled. Within a timeframe of 3 hours it should be able to read meaningful data when the plugin is started again.
 
 ![SignalK Data Browser](/images/signalk_barometer_trend.png)
 
