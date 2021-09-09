@@ -170,10 +170,20 @@ function populate(populateCallback) {
 
     if (barometerData) {
         barometerData.forEach((bd) => {
-                addPressure(bd.datetime, bd.meta.value, bd.meta.altitude, bd.meta.temperature, bd.meta.twd);
+            addPressure(bd.datetime, bd.meta.value, bd.meta.altitude, bd.meta.temperature, bd.meta.twd);
         });
     }
 }
+
+function JSONParser(content) {
+    return JSON.parse(content, (key, value) => {
+        if (key == "datetime") {
+            return new Date(value);
+        } else {
+            return value;
+        }
+    })
+};
 
 module.exports = {
     SUBSCRIPTIONS,
@@ -187,5 +197,6 @@ module.exports = {
     setAltitudeCorrection,
     persist,
     populate,
-    getAll
+    getAll,
+    JSONParser
 }

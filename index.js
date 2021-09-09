@@ -15,7 +15,7 @@ module.exports = function (app) {
     var unsubscribes = [];
     plugin.start = function (options, restartPlugin) {
         app.debug('Plugin started');
-        
+
         barometer.setSampleRate(options.rate);
         app.debug('Sample rate set to ' + options.rate + " seconds");
         barometer.setAltitudeCorrection(options.altitude);
@@ -94,7 +94,7 @@ module.exports = function (app) {
             const content = fs.readFileSync(offlineFilePath(), 'utf-8');
 
             try {
-                return JSON.parse(content);
+                return barometer.JSONParser(content);
             } catch (err) {
                 app.error("Could not parse JSON : " + content);
                 app.error(err.stack);

@@ -179,7 +179,7 @@ describe("Barometer Tests", function () {
             let actual = barometer.onDeltasUpdate(createDeltaMockPressure(101500));
             //assert
             assert.strictEqual(actual.find((f) => f.path === getPath("system")).value, expected);
-        
+
         });
     });
 
@@ -187,7 +187,7 @@ describe("Barometer Tests", function () {
         it("It should equal", function () {
             //arrange
             barometer.clear();
-			let expected = 80 * 1000;
+            let expected = 80 * 1000;
             //act
             var actual = barometer.setSampleRate(80);
             //assert
@@ -196,7 +196,7 @@ describe("Barometer Tests", function () {
         it("It should equal under threshold", function () {
             //arrange
             barometer.clear();
-			let expected = 1200 * 1000;
+            let expected = 1200 * 1000;
             //act
             var actual = barometer.setSampleRate(1201);
             //assert
@@ -205,7 +205,7 @@ describe("Barometer Tests", function () {
         it("It should equal above threshold", function () {
             //arrange
             barometer.clear();
-			let expected = 60 * 1000;
+            let expected = 60 * 1000;
             //act
             var actual = barometer.setSampleRate(59);
             //assert
@@ -217,7 +217,7 @@ describe("Barometer Tests", function () {
         it("It should equal positive", function () {
             //arrange
             barometer.clear();
-			let expected = 104;
+            let expected = 104;
             //act
             barometer.setAltitudeCorrection(4);
             barometer.onDeltasUpdate(createDeltaMockAltitude(100));
@@ -229,7 +229,7 @@ describe("Barometer Tests", function () {
         it("It should equal negative", function () {
             //arrange
             barometer.clear();
-			let expected = 96;
+            let expected = 96;
             //act
             barometer.setAltitudeCorrection(-4);
             barometer.onDeltasUpdate(createDeltaMockAltitude(100));
@@ -241,7 +241,7 @@ describe("Barometer Tests", function () {
         it("It should not equal", function () {
             //arrange
             barometer.clear();
-			let expected = 100;
+            let expected = 100;
             //act
             barometer.setAltitudeCorrection(null);
             barometer.setAltitudeCorrection(undefined);
@@ -250,7 +250,7 @@ describe("Barometer Tests", function () {
             //assert
             assert.strictEqual(actual, expected);
         });
-	});
+    });
 
     describe("persist", function () {
         it("Persist should persist", function () {
@@ -288,11 +288,11 @@ describe("Barometer Tests", function () {
             }
 
             barometer.clear();
-            
+
             //act
             barometer.populate(populateCallback)
             const actual = barometer.getAll();
-            
+
             //assert
             assert.deepEqual(actual, all);
         });
@@ -304,10 +304,10 @@ describe("Barometer Tests", function () {
             const populateCallback = () => {
                 return [];
             }
-            
+
             //act
             barometer.populate(populateCallback)
-            
+
             //assert
             //assert.strictEqual(actual, all);
         });
@@ -319,12 +319,32 @@ describe("Barometer Tests", function () {
             const populateCallback = () => {
                 return null;
             }
-            
+
             //act
             barometer.populate(populateCallback)
-            
+
             //assert
-            //assert.strictEqual(actual, all);
+            assert.ok(true);
+        });
+
+        it("Parse date into date objecft", function () {
+            //arrange
+            barometer.clear();
+            barometer.onDeltasUpdate(createDeltaMockPressure(101500));
+            barometer.onDeltasUpdate(createDeltaMockPressure(101600));
+            barometer.onDeltasUpdate(createDeltaMockPressure(101700));
+
+            const content = JSON.stringify(barometer.getAll());
+
+            const populateCallback = () => {
+                barometer.JSONParser(content);
+            }
+
+            //act
+            barometer.populate(populateCallback)
+
+            //assert
+            assert.ok(true);
         });
     });
 });
