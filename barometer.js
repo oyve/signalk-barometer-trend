@@ -158,17 +158,20 @@ function isNorthernHemisphere() {
 }
 
 function persist(persistCallback) {
-    let json = [{ prop: "test" },{ prop: "test2" }]
-    persistCallback(json); //barometer.getAll()
+    let json = barometer.getAll(); //[{ prop: "test" },{ prop: "test2" }]
+    persistCallback(json); //
 }
 
 function populate(populateCallback) {
     let barometerData = populateCallback();
 
     if (barometerData) {
+        console.debug(barometerData);
         barometerData.forEach((bd) => {
-            addPressure(bd.datetime, bd.meta.value, bd.meta.altitude, bd.meta.temperature, bd.meta.twd);
-            console.debug("Added pressure: " + bd.meta.value)
+            if (bd) {
+                addPressure(bd.datetime, bd.meta.value, bd.meta.altitude, bd.meta.temperature, bd.meta.twd);
+                console.debug("Added pressure: " + bd.meta.value)
+            }
         });
     }
 }

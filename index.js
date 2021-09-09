@@ -76,8 +76,10 @@ module.exports = function (app) {
             if (err) {
                 app.debug(err.stack);
                 app.error(err);
+            } else {
+                app.debug("Wrote barometer data to file " + getFilePath());
             }
-        });
+        });       
     }
 
     function read() {
@@ -85,7 +87,7 @@ module.exports = function (app) {
             const content = fs.readFileSync(getFilePath(), 'utf-8');
 
             try {
-                return JSON.parse(content)
+                return JSON.parse(content);
             } catch (err) {
                 app.error("Could not parse JSON options: " + optionsAsString);
                 app.error(err.stack);
