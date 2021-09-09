@@ -76,11 +76,6 @@ module.exports = function (app) {
             if (err) {
                 app.debug(err.stack);
                 app.error(err);
-                res.status(500);
-                res.send(err);
-                return;
-            } else {
-                res.send("Success\n")
             }
         });
     }
@@ -101,7 +96,7 @@ module.exports = function (app) {
                 return { }
             }
         }
-        return null;
+        return {};
     }
 
     return plugin;
