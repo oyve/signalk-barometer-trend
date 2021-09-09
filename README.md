@@ -28,7 +28,7 @@ The plugin outputs several new SignalK-values, such as:
 ...
 ```
 
-The plugin saves all barometer readings every 5 minutes and when the plugin is disabled. Within a timeframe of 3 hours it should be able to read meaningful data when the plugin is started again.
+The plugin saves all barometer readings every 3 minutes and when the plugin is disabled. Within a timeframe of 3 hours it should be able to read meaningful data when the plugin is started again.
 
 ![SignalK Data Browser](/images/signalk_barometer_trend.png)
 

@@ -171,9 +171,7 @@ function populate(populateCallback) {
 
     if (barometerData) {
         barometerData.forEach((bd) => {
-            if (bd) {
                 addPressure(bd.datetime, bd.meta.value, bd.meta.altitude, bd.meta.temperature, bd.meta.twd);
-            }
         });
     }
 }

@@ -3,10 +3,10 @@ const fs = require('fs');
 const meta = require('./meta.json');
 const schema = require('./schema.json');
 const barometer = require('./barometer');
-let persistTimer = null;
 
 module.exports = function (app) {
     var plugin = { };
+    let persistTimer = null;
 
     plugin.id = 'signalk-barometer-trend';
     plugin.name = 'Barometer Trend';
@@ -39,7 +39,7 @@ module.exports = function (app) {
 
         persistTimer = setInterval(function () {
             barometer.persist(write);
-        }, 1000 * 60 * 5); //every 5 minutes        
+        }, 1000 * 60 * 3); //every 3 minutes        
     };
 
     plugin.stop = function () {
@@ -72,31 +72,31 @@ module.exports = function (app) {
         }
     }
 
-    function getFilePath() {
+    function offlineFilePath() {
         return app.getDataDirPath() + "/offline.json";
     }
 
     function write(json) {
         let content = JSON.stringify(json, null, 2);
 
-        fs.writeFile(getFilePath(), content, 'utf8', (err) => {
+        fs.writeFile(offlineFilePath(), content, 'utf8', (err) => {
             if (err) {
                 app.debug(err.stack);
                 app.error(err);
             } else {
-                app.debug("Wrote barometer data to file " + getFilePath());
+                app.debug("Wrote plugin data to file " + offlineFilePath());
             }
         });
     }
 
     function read() {
         try {
-            const content = fs.readFileSync(getFilePath(), 'utf-8');
+            const content = fs.readFileSync(offlineFilePath(), 'utf-8');
 
             try {
                 return JSON.parse(content);
             } catch (err) {
-                app.error("Could not parse JSON options: " + optionsAsString);
+                app.error("Could not parse JSON : " + content);
                 app.error(err.stack);
                 return [];
             }
