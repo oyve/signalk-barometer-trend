@@ -91,14 +91,14 @@ module.exports = function (app) {
             } catch (err) {
                 app.error("Could not parse JSON options: " + optionsAsString);
                 app.error(err.stack);
-                return { }
+                return [];
             }
         } catch (e) {
             if (e.code && e.code === 'ENOENT') {
-                return { }
+                return [];
             }
         }
-        return {};
+        return [];
     }
 
     return plugin;

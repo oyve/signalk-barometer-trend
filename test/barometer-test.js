@@ -274,7 +274,7 @@ describe("Barometer Tests", function () {
     });
 
     describe("populate", function () {
-        it("Persist should persist", function () {
+        it("Populate should populate", function () {
             //arrange
             barometer.clear();
             barometer.onDeltasUpdate(createDeltaMockPressure(101500));
@@ -295,6 +295,21 @@ describe("Barometer Tests", function () {
             
             //assert
             assert.deepEqual(actual, all);
+        });
+
+        it("Populate should not fail", function () {
+            //arrange
+            barometer.clear();
+
+            const populateCallback = () => {
+                return [];
+            }
+            
+            //act
+            barometer.populate(populateCallback)
+            
+            //assert
+            //assert.strictEqual(actual, all);
         });
     });
 });

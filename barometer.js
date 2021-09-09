@@ -162,7 +162,7 @@ function getAll() {
 }
 
 function persist(persistCallback) {
-    let json = barometerTrend.getAll(); //[{ prop: "test" },{ prop: "test2" }]
+    let json = getAll();
     persistCallback(json);
 }
 
@@ -170,11 +170,9 @@ function populate(populateCallback) {
     let barometerData = populateCallback();
 
     if (barometerData) {
-        console.debug(barometerData);
         barometerData.forEach((bd) => {
             if (bd) {
                 addPressure(bd.datetime, bd.meta.value, bd.meta.altitude, bd.meta.temperature, bd.meta.twd);
-                console.debug("Added pressure: " + bd.meta.value)
             }
         });
     }
