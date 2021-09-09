@@ -14,13 +14,13 @@ let altitudeCorrection = DEFAULT_ALTITUDE_CORRECTION;
  * 
  * @param {number} rate Pressure sample rate in milliseconds
  */
-function setSampleRate(rate = DEFAULT_SAMPLE_RATE) {
-    if(!rate) return;
-    if (rate > 3600) rate = secondsToMilliseconds(3600);
-    if (rate < 60) rate = DEFAULT_SAMPLE_RATE;
+function setSampleRate(rate) {
+    if (!rate) return;
+    if (rate > 1200) rate = 1200;
+    if (rate < 60) rate = 60;
 
-    sampleRate = rate;
-    return rate;
+    sampleRate = rate * 1000;
+    return sampleRate;
 }
 
 /**
@@ -29,7 +29,7 @@ function setSampleRate(rate = DEFAULT_SAMPLE_RATE) {
  * @returns 
  */
 function setAltitudeCorrection(altitude = DEFAULT_ALTITUDE_CORRECTION) {
-    if(altitude === null && altitude === undefined) return;
+    if (altitude === null && altitude === undefined) return;
     altitudeCorrection = altitude
 }
 
@@ -118,7 +118,7 @@ function onTrueWindUpdated(value) {
 function onPressureUpdated(value) {
     if (!value) return;
 
-    barometerTrend.addPressure(
+    addPressure(
         new Date(),
         value,
         latest.altitude.value,
@@ -130,6 +130,9 @@ function onPressureUpdated(value) {
     return map.mapProperties(json);
 }
 
+function addPressure(datetime, value, altitude, temperature, twd) {
+    barometerTrend.addPressure(datetime, value, altitude, temperature, twd);
+}
 
 function clear() {
     barometerTrend.clear();
@@ -153,6 +156,25 @@ function isNorthernHemisphere() {
     return position.latitude < 0 ? false : true;
 }
 
+function getAll() {
+    return barometerTrend.getAll();
+}
+
+function persist(persistCallback) {
+    let json = getAll();
+    persistCallback(json);
+}
+
+function populate(populateCallback) {
+    let barometerData = populateCallback();
+
+    if (barometerData) {
+        barometerData.forEach((bd) => {
+                addPressure(bd.datetime, bd.meta.value, bd.meta.altitude, bd.meta.temperature, bd.meta.twd);
+        });
+    }
+}
+
 module.exports = {
     SUBSCRIPTIONS,
     hasTWDWithinOneMinute,
@@ -160,8 +182,10 @@ module.exports = {
     hasPositionWithinOneMinute,
     onDeltasUpdate,
     clear,
-    //preLoad,
     getLatest: () => latest,
     setSampleRate,
-    setAltitudeCorrection
+    setAltitudeCorrection,
+    persist,
+    populate,
+    getAll
 }

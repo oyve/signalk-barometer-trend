@@ -1,3 +1,5 @@
+const NO_FRONT_DETECTED = "No front detected";
+
 const propertyMap = [
     { signalK: "environment.outside.pressure.trend.tendency", src: (json) => validateProperty(json.trend.tendency) },
     { signalK: "environment.outside.pressure.trend.trend", src: (json) => validateProperty(json.trend.trend) },
@@ -11,9 +13,9 @@ const propertyMap = [
     { signalK: "environment.outside.pressure.prediction.season", src: (json) => validateProperty(json.predictions.season) },
     { signalK: "environment.outside.pressure.prediction.beaufort", src: (json) => validateProperty(json.predictions.beaufort.force) },
     { signalK: "environment.outside.pressure.prediction.beaufort.description", src: (json) => validateProperty(json.predictions.beaufort.description) },
-    { signalK: "environment.outside.pressure.prediction.front.tendency", src: (json) => validateProperty(json.predictions.front.tendency) },
-    { signalK: "environment.outside.pressure.prediction.front.prognose", src: (json) => validateProperty(json.predictions.front.prognose) },
-    { signalK: "environment.outside.pressure.prediction.front.wind", src: (json) => validateProperty(json.predictions.front.wind) },
+    { signalK: "environment.outside.pressure.prediction.front.tendency", src: (json) => validateProperty(json.predictions.front.tendency, NO_FRONT_DETECTED) },
+    { signalK: "environment.outside.pressure.prediction.front.prognose", src: (json) => validateProperty(json.predictions.front.prognose, NO_FRONT_DETECTED) },
+    { signalK: "environment.outside.pressure.prediction.front.wind", src: (json) => validateProperty(json.predictions.front.wind, NO_FRONT_DETECTED) },
 
     { signalK: "environment.outside.pressure.system", src: (json) => validateProperty(json.system.name) },
 

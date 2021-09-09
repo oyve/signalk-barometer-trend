@@ -173,7 +173,7 @@ describe("Barometer Tests", function () {
         it("System is correct", function () {
             //arrange
             barometer.clear();
-            const expected = "Normal";
+            const expected = "Between Low and High";
             barometer.onDeltasUpdate(createDeltaMockPressure(101549));
             //act
             let actual = barometer.onDeltasUpdate(createDeltaMockPressure(101500));
@@ -187,7 +187,7 @@ describe("Barometer Tests", function () {
         it("It should equal", function () {
             //arrange
             barometer.clear();
-			let expected = 80;
+			let expected = 80 * 1000;
             //act
             var actual = barometer.setSampleRate(80);
             //assert
@@ -196,9 +196,9 @@ describe("Barometer Tests", function () {
         it("It should equal under threshold", function () {
             //arrange
             barometer.clear();
-			let expected = 3600 * 1000;
+			let expected = 1200 * 1000;
             //act
-            var actual = barometer.setSampleRate(3601);
+            var actual = barometer.setSampleRate(1201);
             //assert
             assert.strictEqual(actual, expected);
         });
@@ -251,6 +251,82 @@ describe("Barometer Tests", function () {
             assert.strictEqual(actual, expected);
         });
 	});
+
+    describe("persist", function () {
+        it("Persist should persist", function () {
+            //arrange
+            barometer.clear();
+            barometer.onDeltasUpdate(createDeltaMockPressure(101500));
+            barometer.onDeltasUpdate(createDeltaMockPressure(101600));
+            barometer.onDeltasUpdate(createDeltaMockPressure(101700));
+
+            const all = barometer.getAll();
+
+            let actual = null;
+            const persistCallback = (json) => {
+                actual = json;
+            }
+            //act
+            barometer.persist(persistCallback);
+            //assert
+            assert.deepEqual(actual, all);
+        });
+    });
+
+    describe("populate", function () {
+        it("Populate should populate", function () {
+            //arrange
+            barometer.clear();
+            barometer.onDeltasUpdate(createDeltaMockPressure(101500));
+            barometer.onDeltasUpdate(createDeltaMockPressure(101600));
+            barometer.onDeltasUpdate(createDeltaMockPressure(101700));
+
+            const all = barometer.getAll();
+
+            const populateCallback = () => {
+                return all;
+            }
+
+            barometer.clear();
+            
+            //act
+            barometer.populate(populateCallback)
+            const actual = barometer.getAll();
+            
+            //assert
+            assert.deepEqual(actual, all);
+        });
+
+        it("Populate should not fail with empty array", function () {
+            //arrange
+            barometer.clear();
+
+            const populateCallback = () => {
+                return [];
+            }
+            
+            //act
+            barometer.populate(populateCallback)
+            
+            //assert
+            //assert.strictEqual(actual, all);
+        });
+
+        it("Populate should not fail with null", function () {
+            //arrange
+            barometer.clear();
+
+            const populateCallback = () => {
+                return null;
+            }
+            
+            //act
+            barometer.populate(populateCallback)
+            
+            //assert
+            //assert.strictEqual(actual, all);
+        });
+    });
 });
 
 function getPath(path) {
