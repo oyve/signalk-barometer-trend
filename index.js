@@ -3,6 +3,7 @@ const fs = require('fs');
 const meta = require('./meta.json');
 const schema = require('./schema.json');
 const barometer = require('./barometer');
+let persistTimer = null;
 
 module.exports = function (app) {
     var plugin = { };
@@ -14,12 +15,13 @@ module.exports = function (app) {
     var unsubscribes = [];
     plugin.start = function (options, restartPlugin) {
         app.debug('Plugin started');
-        barometer.populate(read);
-
+        
         barometer.setSampleRate(options.rate);
         app.debug('Sample rate set to ' + options.rate + " seconds");
         barometer.setAltitudeCorrection(options.altitude);
         app.debug('Altitude offset set to ' + options.altitude + " metre(s)");
+
+        barometer.populate(read);
 
         let localSubscription = {
             context: '*',
@@ -34,10 +36,15 @@ module.exports = function (app) {
             },
             delta => sendDelta(barometer.onDeltasUpdate(delta))
         );
+
+        persistTimer = setInterval(function () {
+            barometer.persist(write);
+        }, 1000 * 60 * 5); //every 5 minutes        
     };
 
     plugin.stop = function () {
         app.debug('Plugin stopping');
+        clearInterval(persistTimer)
         barometer.persist(write);
 
         unsubscribes.forEach(f => f());
@@ -79,7 +86,7 @@ module.exports = function (app) {
             } else {
                 app.debug("Wrote barometer data to file " + getFilePath());
             }
-        });       
+        });
     }
 
     function read() {
