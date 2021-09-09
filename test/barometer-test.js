@@ -173,7 +173,7 @@ describe("Barometer Tests", function () {
         it("System is correct", function () {
             //arrange
             barometer.clear();
-            const expected = "Normal";
+            const expected = "Between Low and High";
             barometer.onDeltasUpdate(createDeltaMockPressure(101549));
             //act
             let actual = barometer.onDeltasUpdate(createDeltaMockPressure(101500));
@@ -251,6 +251,52 @@ describe("Barometer Tests", function () {
             assert.strictEqual(actual, expected);
         });
 	});
+
+    describe("persist", function () {
+        it("Persist should persist", function () {
+            //arrange
+            barometer.clear();
+            barometer.onDeltasUpdate(createDeltaMockPressure(101500));
+            barometer.onDeltasUpdate(createDeltaMockPressure(101600));
+            barometer.onDeltasUpdate(createDeltaMockPressure(101700));
+
+            const all = barometer.getAll();
+
+            let actual = null;
+            const persistCallback = (json) => {
+                actual = json;
+            }
+            //act
+            barometer.persist(persistCallback);
+            //assert
+            assert.deepEqual(actual, all);
+        });
+    });
+
+    describe("populate", function () {
+        it("Persist should persist", function () {
+            //arrange
+            barometer.clear();
+            barometer.onDeltasUpdate(createDeltaMockPressure(101500));
+            barometer.onDeltasUpdate(createDeltaMockPressure(101600));
+            barometer.onDeltasUpdate(createDeltaMockPressure(101700));
+
+            const all = barometer.getAll();
+
+            const populateCallback = () => {
+                return all;
+            }
+
+            barometer.clear();
+            
+            //act
+            barometer.populate(populateCallback)
+            const actual = barometer.getAll();
+            
+            //assert
+            assert.deepEqual(actual, all);
+        });
+    });
 });
 
 function getPath(path) {
