@@ -74,6 +74,9 @@ function onDeltasUpdate(deltas) {
     let deltaValues = [];
 
     deltas.updates.forEach(u => {
+        if (!u.values) {
+            return;
+        }
         u.values.forEach((value) => {
             let onDeltaUpdated = SUBSCRIPTIONS.find((d) => d.path === value.path);
 
