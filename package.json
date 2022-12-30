@@ -1,6 +1,6 @@
 {
   "name": "signalk-barometer-trend",
-  "version": "2.3.2",
+  "version": "2.3.3",
   "description": "Get pressure trend and weather predictions from a barometer over time",
   "main": "index.js",
   "scripts": {
