@@ -1,7 +1,7 @@
 ![Node.js Package](https://github.com/oyve/signalk-barometer-trend/workflows/Node.js%20Package/badge.svg)
 
 # signalk-barometer-trend
-Calculate pressure trend and get weather predictions from a barometer over time. Are there foul weather on the way?
+Analyzes and calculates the tendency and trend of barometer readings over a one or three hour period including barometric weather predictions. Is foul weather on the horizon?
 
 ## Prerequisites
 - A barometer, i.e. the [bme280](https://www.google.com/search?client=firefox-b-d&q=bme280), outputting `'environment.outside.pressure'` to SignalK
