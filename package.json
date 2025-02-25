@@ -33,7 +33,8 @@
   "homepage": "https://github.com/oyve/signalk-barometer-trend#readme",
   "dependencies": {
     "barometer-trend": "^2.2.5",
-    "lodash": "^4.17.21"
+    "lodash": "^4.17.21",
+    "regression": "^2.0.1"
   },
   "devDependencies": {
     "mocha": "^10.1.0"

@@ -16,10 +16,19 @@ module.exports = function (app) {
     plugin.start = function (options, restartPlugin) {
         app.debug('Plugin started');
 
-        barometer.setSampleRate(options.rate);
-        app.debug('Sample rate set to ' + options.rate + " seconds");
-        barometer.setAltitudeCorrection(options.altitude);
-        app.debug('Altitude offset set to ' + options.altitude + " metre(s)");
+        try {
+            barometer.setSampleRate(options.rate);
+            app.debug('Sample rate set to ' + options.rate + " seconds");
+        } catch (error) {
+            app.error('Error setting sample rate: ' + error.message);
+        }
+
+        try {
+            barometer.setAltitudeCorrection(options.altitude);
+            app.debug('Altitude offset set to ' + options.altitude + " metre(s)");
+        } catch (error) {
+            app.error('Error setting altitude correction: ' + error.message);
+        }
 
         barometer.populate(read);
 
@@ -44,7 +53,7 @@ module.exports = function (app) {
 
     plugin.stop = function () {
         app.debug('Plugin stopping');
-        clearInterval(persistTimer)
+        clearInterval(persistTimer);
         barometer.persist(write);
 
         unsubscribes.forEach(f => f());
@@ -56,7 +65,6 @@ module.exports = function (app) {
 
     function sendDelta(deltaValues) {
         if (deltaValues !== null && deltaValues.length > 0) {
-
             let signalk_delta = {
                 context: "vessels." + app.selfId,
                 updates: [
@@ -92,20 +100,16 @@ module.exports = function (app) {
     function read() {
         try {
             const content = fs.readFileSync(offlineFilePath(), 'utf-8');
-
-            try {
-                return barometer.JSONParser(content);
-            } catch (err) {
-                app.error("Could not parse JSON : " + content);
+            return barometer.JSONParser(content);
+        } catch (err) {
+            if (err.code === 'ENOENT') {
+                return [];
+            } else {
+                app.error("Error reading file: " + err.message);
                 app.error(err.stack);
                 return [];
             }
-        } catch (e) {
-            if (e.code && e.code === 'ENOENT') {
-                return [];
-            }
         }
-        return [];
     }
 
     return plugin;
