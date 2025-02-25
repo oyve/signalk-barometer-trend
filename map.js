@@ -25,47 +25,73 @@ const propertyMap = [
     { signalK: "environment.outside.pressure.12hr", src: (json) => history(json, 12) },
     { signalK: "environment.outside.pressure.24hr", src: (json) => history(json, 24) },
     { signalK: "environment.outside.pressure.48hr", src: (json) => history(json, 48) }
-]
+];
 
 /**
+ * Maps properties from the JSON structure to Signal K delta updates.
  * 
- * @param {Array<Object>} json barometer-trend (npm-package) JSON structure
- * @returns [{path: path, value: value}]
+ * @param {Array<Object>} json - barometer-trend (npm-package) JSON structure
+ * @returns {Array<Object>|null} - Array of delta updates or null if no updates
  */
 function mapProperties(json) {
-
     const deltaUpdates = [];
     propertyMap.forEach((p) => {
         try {
             let value = (json !== null) ? p.src(json) : defaultPropertyValue;
             let deltaUpdate = buildDeltaPath(p.signalK, value);
             deltaUpdates.push(deltaUpdate);
-        } catch {
-            console.debug("Failed to map property: " + p.signalK);
+        } catch (error) {
+            console.debug("Failed to map property: " + p.signalK + " Error: " + error.message);
         }
     });
 
     return deltaUpdates.length > 0 ? deltaUpdates : null;
 }
 
-const history = (json, hour) => { 
-    let pressure = json.history.find((h) => h.hour === hour).pressure;
-    return pressure !== null ? validateProperty(pressure.meta.value) : null;
-}
+/**
+ * Retrieves the pressure value from the history for a specific hour.
+ * 
+ * @param {Object} json - JSON structure containing history data
+ * @param {number} hour - The hour for which to retrieve the pressure
+ * @returns {number|null} - The pressure value or null if not found
+ */
+const history = (json, hour) => {
+    try {
+        let pressure = json.history.find((h) => h.hour === hour).pressure;
+        return pressure !== null ? validateProperty(pressure.meta.value) : null;
+    } catch (error) {
+        console.debug("Failed to retrieve history for hour: " + hour + " Error: " + error.message);
+        return null;
+    }
+};
 
 const defaultPropertyValue = null;
 
+/**
+ * Validates a property value, returning a default value if the property is null or undefined.
+ * 
+ * @param {any} value - The property value to validate
+ * @param {any} [defaultValue=defaultPropertyValue] - The default value to return if the property is invalid
+ * @returns {any} - The validated property value or the default value
+ */
 function validateProperty(value, defaultValue = defaultPropertyValue) {
-    return (value !== null || value !== undefined) ? value : defaultValue;
+    return (value !== null && value !== undefined) ? value : defaultValue;
 }
 
+/**
+ * Builds a delta path object for Signal K.
+ * 
+ * @param {string} path - The Signal K path
+ * @param {any} value - The value to set at the path
+ * @returns {Object} - The delta path object
+ */
 function buildDeltaPath(path, value) {
     return {
         path: path,
         value: value
-    }
+    };
 }
 
 module.exports = {
-	mapProperties
-}
+    mapProperties
+};
