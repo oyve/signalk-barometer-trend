@@ -82,7 +82,7 @@ function onDeltasUpdate(deltas) {
 
             if (onDeltaUpdated !== null) {
                 let updates = onDeltaUpdated.handle(value.value);
-                console.debug("Handle: " + JSON.stringify(value));
+                //console.debug("Handle: " + JSON.stringify(value));
 
                 if (updates && updates.length > 0) {
                     //console.debug(JSON.stringify(updates));
