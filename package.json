@@ -1,11 +1,17 @@
 {
   "name": "signalk-barometer-trend",
-  "version": "2.3.4",
-  "description": "Get pressure trend and weather predictions from a barometer over time",
+  "version": "2.3.5",
+  "description": "Analyze pressure trend and weather forecast from barometer readings",
   "main": "index.js",
   "scripts": {
     "test": "mocha --recursive"
   },
+  "type": "commonjs",
+  "files": [
+    "index.js",
+    "assets",
+    "LICENSE"
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/oyve/signalk-barometer-trend.git"
@@ -20,11 +26,15 @@
     "trend",
     "tendency",
     "front",
-    "hemisphere",
-    "prediction",
     "weather",
+    "prediction",
     "forecast"
   ],
+  "signalk-plugin-enabled-by-default": false,
+  "signalk": {
+    "appIcon": "./assets/signalk-barometer-trend-icon-72x72.png",
+    "displayName": "Barometer Trend"
+  },
   "author": "github.com/oyve",
   "license": "Apache-2.0",
   "bugs": {

@@ -2,7 +2,8 @@
 const fs = require('fs');
 const meta = require('./meta.json');
 const schema = require('./schema.json');
-const barometer = require('./barometer');
+const barometer = require('./src/barometer');
+const globals = require('barometer-trend/src/globals');
 
 module.exports = function (app) {
     var plugin = { };
@@ -10,24 +11,33 @@ module.exports = function (app) {
 
     plugin.id = 'signalk-barometer-trend';
     plugin.name = 'Barometer Trend';
-    plugin.description = 'Calculate tendency, trend and weather predictions of barometric pressure';
+    plugin.description = 'Calculate the pressure trend and other weather forecasts based on barometric pressure.';
 
     var unsubscribes = [];
-    plugin.start = function (options, restartPlugin) {
+    plugin.start = function (settings, restartPlugin) {
         app.debug('Plugin started');
 
-        try {
-            barometer.setSampleRate(options.rate);
-            app.debug('Sample rate set to ' + options.rate + " seconds");
-        } catch (error) {
-            app.error('Error setting sample rate: ' + error.message);
-        }
-
-        try {
-            barometer.setAltitudeCorrection(options.altitude);
-            app.debug('Altitude offset set to ' + options.altitude + " metre(s)");
-        } catch (error) {
-            app.error('Error setting altitude correction: ' + error.message);
+        if (settings.generalSettingsSection !== undefined && settings.optionalSettingsSection !== undefined) {
+            applySetting(
+                'Sample Rate',
+                settings.generalSettingsSection.rate,
+                (value) => barometer.setSampleRate(value)
+            );
+            applySetting(
+                'Altitude Offset',
+                settings.generalSettingsSection.altitude,
+                (value) => barometer.setAltitudeCorrection(value)
+            );
+            applySetting(
+                'Diurnal',
+                settings.optionalSettingsSection.diurnal,
+                (value) => globals.setApplyDiurnalRythm(value)
+            );
+            applySetting(
+                'Smoothing',
+                settings.optionalSettingsSection.smoothing,
+                (value) => globals.setApplySmoothing(value)
+            );
         }
 
         barometer.populate(read);
@@ -63,6 +73,20 @@ module.exports = function (app) {
 
     plugin.schema = schema[0];
 
+    function applySetting(settingName, settingValue, applyCallback) {
+        if (settingValue === null || settingValue === '') {
+            app.error(`${settingName} is invalid: null, undefined, or empty.`);
+            return;
+        }
+        
+        try {
+            applyCallback(settingValue);
+            app.debug(`${settingName} set to ${settingValue}`);
+        } catch (error) {
+            app.error(`Error setting ${settingName}: ${error.message}`);
+        }
+    }
+      
     function sendDelta(deltaValues) {
         if (deltaValues !== null && deltaValues.length > 0) {
             let signalk_delta = {
@@ -91,8 +115,9 @@ module.exports = function (app) {
             if (err) {
                 app.debug(err.stack);
                 app.error(err);
+                deleteOfflineFile(); //try delete as it may be corrupted
             } else {
-                app.debug("Wrote plugin data to file " + offlineFilePath());
+                app.debug(`Wrote plugin data to file: ${offlineFilePath()}`);
             }
         });
     }
@@ -100,15 +125,35 @@ module.exports = function (app) {
     function read() {
         try {
             const content = fs.readFileSync(offlineFilePath(), 'utf-8');
-            return barometer.JSONParser(content);
-        } catch (err) {
-            if (err.code === 'ENOENT') {
+            return !content ? null : barometer.JSONParser(content);
+        } catch (error) {
+            if (error.code === 'ENOENT') {
                 return [];
             } else {
-                app.error("Error reading file: " + err.message);
-                app.error(err.stack);
+                app.error(`Error reading file: ${error.message}`);
+                deleteOfflineFile();  //try delete as it may be corrupted
+
                 return [];
             }
+        }
+    }
+
+    function deleteOfflineFile() {
+        try {
+            if(fs.existsSync(offlineFilePath())) {
+                app.debug(`Deleting file: ${offlineFilePath()}`);
+                fs.unlink(offlineFilePath(), (error) => {
+                    if (error) {
+                        app.error(`Error deleting file: ${error.message}`);
+                        return;
+                    }
+                    app.debug('File deleted successfully!');
+                });
+            }
+        }
+        catch (error) {
+            app.error(`Error deleting file: ${error.message}`);
+            return;
         }
     }
 
