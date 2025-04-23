@@ -1,0 +1,29 @@
+# Node modules and logs
+node_modules
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+pnpm-debug.log
+
+# OS/system files
+.DS_Store
+Thumbs.db
+
+# Git
+.git
+.gitignore
+
+# Docker
+.dockerignore
+Dockerfile
+
+# Tests and local environment
+coverage
+.env
+.env.local
+.vscode
+__tests__
+
+# Build artifacts (if any)
+dist
+build
