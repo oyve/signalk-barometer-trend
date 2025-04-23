@@ -1,10 +1,11 @@
 'use strict'
 const barometerTrend = require('barometer-trend');
+const readingStore = require('barometer-trend/src/readingStore');
 const map = require('./map');
 const lodash = require('lodash');
 
 const secondsToMilliseconds = (seconds) => seconds * 1000;
-const DEFAULT_SAMPLE_RATE = secondsToMilliseconds(60);
+const DEFAULT_SAMPLE_RATE = secondsToMilliseconds(180);
 const DEFAULT_ALTITUDE_CORRECTION = 0;
 
 let sampleRate = DEFAULT_SAMPLE_RATE; //default
@@ -16,10 +17,10 @@ let altitudeCorrection = DEFAULT_ALTITUDE_CORRECTION;
  */
 function setSampleRate(rate) {
     if (!rate) return;
-    if (rate > 1200) rate = 1200;
-    if (rate < 60) rate = 60;
 
-    sampleRate = rate * 1000;
+    // Ensure rate is within the range 60 - 1200 and convert to milliseconds
+    sampleRate = Math.min(Math.max(rate, 60), 1200) * 1000;
+
     return sampleRate;
 }
 
@@ -38,6 +39,7 @@ const SUBSCRIPTIONS = [
     { path: 'navigation.position', period: secondsToMilliseconds(30), policy: "instant", minPeriod: secondsToMilliseconds(60), handle: (value) => onPositionUpdated(value) },
     { path: 'navigation.gnss.antennaAltitude', period: secondsToMilliseconds(30), policy: "instant", minPeriod: secondsToMilliseconds(60), handle: (value) => onAltitudeUpdated(value) },
     { path: 'environment.outside.temperature', period: secondsToMilliseconds(30), policy: "instant", minPeriod: secondsToMilliseconds(60), handle: (value) => onTemperatureUpdated(value) },
+    { path: 'environment.outside.humidity', period: secondsToMilliseconds(30), policy: "instant", minPeriod: secondsToMilliseconds(60), handle: (value) => onHumidityUpdated(value) },
     { path: 'environment.outside.pressure', period: sampleRate, handle: (value) => onPressureUpdated(value) }
 ];
 
@@ -54,6 +56,9 @@ const TEMPLATE_LATEST = {
         value: null
     },
     temperature: {
+        value: null
+    },
+    humidity: {
         value: null
     }
 }
@@ -100,6 +105,10 @@ function onPositionUpdated(value) {
     latest.position.value = value;
 }
 
+function onHumidityUpdated(value) {
+    latest.humidity.value = value;
+}
+
 function onTemperatureUpdated(value) {
     latest.temperature.value = value;
 }
@@ -126,15 +135,26 @@ function onPressureUpdated(value) {
         value,
         latest.altitude.value,
         latest.temperature.value,
-        hasTWDWithinOneMinute() ? latest.twd.value : null);
+        latest.humidity.value,
+        hasTWDWithinOneMinute() ? latest.twd.value : null,
+        latest.position?.value?.latitude);
 
-    let json = barometerTrend.getPredictions(isNorthernHemisphere());
-
-    return map.mapProperties(json);
+    if(readingStore.count() > 1) {
+        let json = barometerTrend.getForecast(isNorthernHemisphere());
+        return readingStore.count() > 1 ? map.mapProperties(json) : null;
+    } else {
+        return null;
+    }
 }
 
-function addPressure(datetime, value, altitude, temperature, twd) {
-    barometerTrend.addPressure(datetime, value, altitude, temperature, twd);
+function addPressure(datetime, pressure, altitude, temperature, humidity, twd, latitude) {
+    barometerTrend.addPressure(datetime, pressure, {
+        altitude: altitude,
+        temperature: temperature,
+        humidity: humidity,
+        trueWindDirection: twd,
+        latitude: latitude
+    });
 }
 
 function clear() {
@@ -160,7 +180,7 @@ function isNorthernHemisphere() {
 }
 
 function getAll() {
-    return barometerTrend.getAll();
+    return readingStore.getAll();
 }
 
 function persist(persistCallback) {
@@ -171,14 +191,22 @@ function persist(persistCallback) {
 function populate(populateCallback) {
     let barometerData = populateCallback();
 
-    if (barometerData) {
-        barometerData.forEach((bd) => {
-            addPressure(bd.datetime, bd.meta.value, bd.meta.altitude, bd.meta.temperature, bd.meta.twd);
-        });
-    }
+    if (!barometerData) return;
+
+    barometerData.forEach((reading) => {
+        addPressure(
+            reading.datetime,
+            reading.pressure,
+            reading.meta.altitude,
+            reading.meta.temperature,
+            reading.meta.humidity,
+            reading.meta.trueWindDirection,
+            reading.meta.latitude);
+    });
 }
 
 function JSONParser(content) {
+    if (!content) return null;
     return JSON.parse(content, (key, value) => {
         if (key == "datetime") {
             return new Date(value);

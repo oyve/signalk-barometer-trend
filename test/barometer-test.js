@@ -1,6 +1,6 @@
 'use strict'
 const assert = require('assert');
-const barometer = require('../barometer');
+const barometer = require('../src/barometer');
 const KELVIN = 273.15;
 
 describe("Barometer Tests", function () {
@@ -24,9 +24,9 @@ describe("Barometer Tests", function () {
             //act
             let actual = barometer.onDeltasUpdate(createDeltaMockPressure(101500 + 3));
             //assert
-            assert.strictEqual(actual.find((f) => f.path === getPath("trend.tendency")).value, expectedTendency);
-            assert.strictEqual(actual.find((f) => f.path === getPath("trend.trend")).value, expectedTrend);
-            assert.strictEqual(actual.find((f) => f.path === getPath("trend.severity")).value, 0);
+            assert.strictEqual(actual.find((f) => f.path === getPressurePath("pressureTendency")).value, expectedTendency);
+            assert.strictEqual(actual.find((f) => f.path === getPressurePath("pressureTrend")).value, expectedTrend);
+            assert.strictEqual(actual.find((f) => f.path === getPressurePath("pressureSeverity")).value, 0);
         });
 
         it("it should throw an exception", function () {
@@ -178,7 +178,7 @@ describe("Barometer Tests", function () {
             //act
             let actual = barometer.onDeltasUpdate(createDeltaMockPressure(101500));
             //assert
-            assert.strictEqual(actual.find((f) => f.path === getPath("system")).value, expected);
+            assert.strictEqual(actual.find((f) => f.path === getForecastPath("pressureSystem")).value, expected);
 
         });
     });
@@ -349,83 +349,46 @@ describe("Barometer Tests", function () {
     });
 });
 
-function getPath(path) {
-    return "environment.outside.pressure." + path;
+function getPressurePath(path) {
+    return "environment.outside." + path;
+}
+function getForecastPath(path) {
+    return "environment.forecast." + path;
+}
+
+function createUpdateMock(path, value) {
+    return {
+        updates: [
+            {
+                values: [
+                    {
+                        path: path,
+                        value: value
+                    }
+                ]
+            }
+        ]
+    }
 }
 
 function createDeltaMockPressure(value) {
-    return {
-        updates: [
-            {
-                values: [
-                    {
-                        path: 'environment.outside.pressure',
-                        value: value
-                    }
-                ]
-            }
-        ]
-    }
+    return createUpdateMock('environment.outside.pressure', value);
 }
 
 function createDeltaMockTemperature(temperature) {
-    return {
-        updates: [
-            {
-                values: [
-                    {
-                        path: 'environment.outside.temperature',
-                        value: temperature
-                    }
-                ]
-            }
-        ]
-    }
+    return createUpdateMock('environment.outside.temperature', temperature);
 }
 
 function createDeltaMockAltitude(altitude) {
-    return {
-        updates: [
-            {
-                values: [
-                    {
-                        path: 'navigation.gnss.antennaAltitude',
-                        value: altitude
-                    }
-                ]
-            }
-        ]
-    }
+    return createUpdateMock('navigation.gnss.antennaAltitude', altitude);
 }
 
 function createDeltaMockWindDirection(value) {
-    return {
-        updates: [
-            {
-                values: [
-                    {
-                        path: 'environment.wind.directionTrue',
-                        value: value
-                    }
-                ]
-            }
-        ]
-    }
+    return createUpdateMock('environment.wind.directionTrue', value);
 }
 
 function createDeltaMockPosition(position) {
-    return {
-        updates: [
-            {
-                values: [
-                    {
-                        path: 'navigation.position',
-                        value: position
-                    }
-                ]
-            }
-        ]
-    }
+    return createUpdateMock('navigation.position', position);
 }
 
 function mockPositionNorthernHemisphere() {
