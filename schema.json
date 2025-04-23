@@ -1,17 +1,83 @@
-[{
+[
+  {
+	"$schema": "http://json-schema.org/draft-07/schema#",
+	"$id": "https://github.com/oyve/signalk-barometer-trend/blob/main/schema.json",
+	"title": "Barometer Trend Plugin Settings",
 	"type": "object",
 	"properties": {
-		"rate": {
-			"title": "Pressure Sample Rate (s)",
-			"description": "Example: 60, 600, 1200 (1, 10, 20 minutes). Min: 60 (default), Max = 1200",
-			"type": "number",
-			"default": 60
+		"titleSection": {
+			"type": "null",
+			"title": "Prerequisites",
+			"description": "This plugin requires at least the 'environment.outside.pressure' value to calculate the barometric pressure trend. For more details, refer to Help Section below or the online documentation. Please note, it may take some time before any data appears, as the plugin needs to collect and analyze pressure readings over a period. The longer data is collected, the more accurate the trend will be. The plugin will automatically start collecting data once enabled, and you can adjust the settings at any time."
 		},
-		"altitude": {
-			"title": "Altitude offset (m)",
-			"description": "Sensor altitude offset to GPS altitude or default zero",
-			"type": "number",
-			"default": 0
-		}
+		"generalSettingsSection": {
+			"type": "object",
+			"title": "General Settings",
+			"description": "Configure general settings for the barometer trend.",
+			"required": ["rate", "altitude"],
+			"properties": {
+				"rate": {
+					"type": "integer",
+					"title": "Pressure Sample Rate (seconds)",
+					"description": "Set how often pressure readings are taken. Examples: 60 (1 min), 600 (10 min), 1200 (20 min). Default: 180 (3 min).",
+					"default": 180,
+					"minimum": 60,
+					"maximum": 1200,
+					"multipleOf": 60
+				},
+				"altitude": {
+					"type": "integer",
+					"title": "Altitude Offset (meters)",
+					"description": "Set barometer sensor altitude offset relative to GPS altitude. (Default: 0 meters)",
+					"default": 0
+				}
+			}
+		},
+		"optionalSettingsSection": {
+			"type": "object",
+			"title": "Optional Settings",
+			"description": "Configure optional settings for the barometer trend.",
+			"properties": {
+				"diurnal": {
+					"type": "boolean",
+					"title": "Enable Diurnal Correction",
+					"description": "Apply diurnal correction to pressure trend. (Default: false)",
+					"default": false
+				},
+				"smoothing": {
+					"type": "boolean",
+					"title": "Enable Smoothing",
+					"description": "Smooth sudden peaks and drops in pressure trends (Default: false).",
+					"default": false
+				}
+			}
+		},
+		"helpSection": {
+			"type": "object",
+			"title": "Help Section",
+		  	"properties": {
+				"preciseCalculationsText": {
+					"type": "null",
+					"title": "Precise Calculations",
+					"description": "For more accurate calculations, readings for Temperature ('environment.outside.temperature'), Wind Direction ('environment.wind.directionTrue'), and Humidity ('environment.outside.humidity') are recommended. The plugin uses the latest available values from SignalK, and falls back to a mean average if values are missing. It's recommended to use the temperature from a sensor located at the same place as pressure readings, as this provides more accurate calculations."
+				},
+				"altitudeOffsetText": {
+					"type": "null",
+					"title": "Altitude Offset",
+					"description": "Sensor Altitude Offset allows you to align your barometer's altitude with the station's GPS altitude. This is particularly useful when the sensor is installed at a different location than the GPS, such as on a mast. Applying the correct offset ensures that pressure readings are accurately adjusted to sea level, improving the overall calculations. Default value (0) represents sea level."
+				},
+				"diurnalText": {
+					"type": "null",
+					"title": "Diurnal correction",
+					"description": "Diurnal correction adjusts the pressure trend to account for natural daily variations in atmospheric pressure caused by the Earth's atmospheric cycle. This correction uses an approximate model based on your latitude (requires 'navigation.position'), time of day, and time of year. Note that it may not be fully accurate for all locations due to local geographical and weather-related factors. You may turn this feature on or off at any time, as it will not affect the pressure trend data already collected, it will simply default to not using the correction."
+				},
+				"smoothingText": {
+					"type": "null",
+					"title": "Smoothing",
+					"description": "Smoothing reduces sudden peaks and drops in the pressure trend, providing a more stable and accurate view of atmospheric pressure. This is particularly helpful in environments with rapid fluctuations—e.g., indoors when doors or windows are opened or closed. Allow a few readings for the smoothing to stabilize. Enabling this feature will internally overwrite pressure values, affecting calculations like diurnal correction and sea-level adjustment. Toggling it may impact previously collected trend data, potentially leading to inaccurate analysis for a period of time, depending on the severity of prior data spikes."
+				}
+			}
+	  	}
 	}
 }]
+  
