@@ -1,8 +1,7 @@
 'use strict'
 const assert = require('assert');
-const { getPressureAverage } = require('barometer-trend/utils');
-const barometer = require('../barometer');
-const map = require("../map");
+const map = require("../src/map");
+const { max } = require('lodash');
 
 describe("Barometer Tests", function () {
 	describe("History", function () {
@@ -12,7 +11,7 @@ describe("Barometer Tests", function () {
 			//act
 			let actual = map.mapProperties(jsonMock);
 			//assert
-			assert.strictEqual(actual.find((m) => m.path === 'environment.outside.pressure.1hr').value, expected);
+			assert.strictEqual(actual.find((m) => m.path === 'environment.outside.pressureMinus01hr').value, expected);
 		});
 		it("It should equal 3hr", function () {
 			//arrange
@@ -20,7 +19,7 @@ describe("Barometer Tests", function () {
 			//act
 			let actual = map.mapProperties(jsonMock);
 			//assert
-			assert.strictEqual(actual.find((m) => m.path === 'environment.outside.pressure.3hr').value, expected);
+			assert.strictEqual(actual.find((m) => m.path === 'environment.outside.pressureMinus03hr').value, expected);
 		});
 		it("It should equal 6hr", function () {
 			//arrange
@@ -28,7 +27,7 @@ describe("Barometer Tests", function () {
 			//act
 			let actual = map.mapProperties(jsonMock);
 			//assert
-			assert.strictEqual(actual.find((m) => m.path === 'environment.outside.pressure.6hr').value, expected);
+			assert.strictEqual(actual.find((m) => m.path === 'environment.outside.pressureMinus06hr').value, expected);
 		});
 		it("It should equal 12hr", function () {
 			//arrange
@@ -36,7 +35,7 @@ describe("Barometer Tests", function () {
 			//act
 			let actual = map.mapProperties(jsonMock);
 			//assert
-			assert.strictEqual(actual.find((m) => m.path === 'environment.outside.pressure.12hr').value, expected);
+			assert.strictEqual(actual.find((m) => m.path === 'environment.outside.pressureMinus12hr').value, expected);
 		});
 		it("It should equal 24hr", function () {
 			//arrange
@@ -44,7 +43,7 @@ describe("Barometer Tests", function () {
 			//act
 			let actual = map.mapProperties(jsonMock);
 			//assert
-			assert.strictEqual(actual.find((m) => m.path === 'environment.outside.pressure.24hr').value, expected);
+			assert.strictEqual(actual.find((m) => m.path === 'environment.outside.pressureMinus24hr').value, expected);
 		});
 		it("It should equal 48hr", function () {
 			//arrange
@@ -52,7 +51,7 @@ describe("Barometer Tests", function () {
 			//act
 			let actual = map.mapProperties(jsonMock);
 			//assert
-			assert.strictEqual(actual.find((m) => m.path === 'environment.outside.pressure.48hr').value, expected);
+			assert.strictEqual(actual.find((m) => m.path === 'environment.outside.pressureMinus48hr').value, expected);
 		});
 	});
 });
@@ -81,7 +80,10 @@ const jsonMock = {
 		period: 10800
 	},
 	predictions: {
-		pressureOnly: "Pressure Only"
+		pressureOnly: "Pressure Only",
+		beaufort: { low: 2.67, high: 3.33, force: "F6-7", min: 6, max: 7, description: "Strong breeze to near gale" },
+		front: { "key": "FFF", "tendency": "Continously falling", "prognose": "Warm or cold front approaching", "wind": "Has backed and increasing" },
+		system: { key: 0, name: "Low", short: "LOW", threshold: 0.1 }
 	},
 	history: [
 		{ hour: 1, pressure: pressureMock(102100) },
