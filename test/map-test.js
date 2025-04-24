@@ -3,7 +3,7 @@ const assert = require('assert');
 const map = require("../src/map");
 const { max } = require('lodash');
 
-describe("Barometer Tests", function () {
+describe("Map Tests", function () {
 	describe("History", function () {
 		it("It should equal 1hr", function () {
 			//arrange
