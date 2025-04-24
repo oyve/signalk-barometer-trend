@@ -27,6 +27,7 @@ RUN npm link barometer-trend
 RUN mkdir -p ~/.signalk/node_modules
 RUN cp -r /app/signalk-barometer-trend ~/.signalk/node_modules/signalk-barometer-trend
 RUN cp -r /app/barometer-trend ~/.signalk/node_modules/barometer-trend
+RUN cp -r /app/signalk-barometer-trend/security.json ~/.signalk/
 
 # Switch back to the signalk user
 #USER node
