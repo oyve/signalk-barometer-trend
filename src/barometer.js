@@ -1,7 +1,6 @@
 'use strict'
 const barometerTrend = require('barometer-trend');
 const readingStore = require('barometer-trend/src/readingStore');
-const map = require('./map');
 const lodash = require('lodash');
 
 const secondsToMilliseconds = (seconds) => seconds * 1000;
@@ -19,9 +18,7 @@ function setSampleRate(rate) {
     if (!rate) return;
 
     // Ensure rate is within the range 60 - 1200 and convert to milliseconds
-    sampleRate = Math.min(Math.max(rate, 60), 1200) * 1000;
-
-    return sampleRate;
+    return sampleRate = Math.min(Math.max(rate, 60), 1200) * 1000;
 }
 
 /**
@@ -36,6 +33,7 @@ function setAltitudeCorrection(altitude = DEFAULT_ALTITUDE_CORRECTION) {
 
 const SUBSCRIPTIONS = [
     { path: 'environment.wind.directionTrue', period: secondsToMilliseconds(30), policy: "instant", minPeriod: secondsToMilliseconds(60), handle: (value) => onTrueWindUpdated(value) },
+    { path: 'environment.wind.speedTrue', period: secondsToMilliseconds(30), policy: "instant", minPeriod: secondsToMilliseconds(60), handle: (value) => onWindSpeedUpdated(value) },
     { path: 'navigation.position', period: secondsToMilliseconds(30), policy: "instant", minPeriod: secondsToMilliseconds(60), handle: (value) => onPositionUpdated(value) },
     { path: 'navigation.gnss.antennaAltitude', period: secondsToMilliseconds(30), policy: "instant", minPeriod: secondsToMilliseconds(60), handle: (value) => onAltitudeUpdated(value) },
     { path: 'environment.outside.temperature', period: secondsToMilliseconds(30), policy: "instant", minPeriod: secondsToMilliseconds(60), handle: (value) => onTemperatureUpdated(value) },
@@ -45,6 +43,10 @@ const SUBSCRIPTIONS = [
 
 const TEMPLATE_LATEST = {
     twd: {
+        time: null,
+        value: null
+    },
+    tws: {
         time: null,
         value: null
     },
@@ -87,10 +89,8 @@ function onDeltasUpdate(deltas) {
 
             if (onDeltaUpdated !== null) {
                 let updates = onDeltaUpdated.handle(value.value);
-                //console.debug("Handle: " + JSON.stringify(value));
 
                 if (updates && updates.length > 0) {
-                    //console.debug(JSON.stringify(updates));
                     updates.forEach((update) => deltaValues.push(update));
                 }
             }
@@ -122,6 +122,11 @@ function onTrueWindUpdated(value) {
     latest.twd.value = value;
 }
 
+function onWindSpeedUpdated(value) {
+    latest.tws.time = Date.now();
+    latest.tws.value = value;
+}
+
 /**
  * 
  * @param {number} value Pressure value in (Pa) Pascal.
@@ -137,22 +142,26 @@ function onPressureUpdated(value) {
         latest.temperature.value,
         latest.humidity.value,
         hasTWDWithinOneMinute() ? latest.twd.value : null,
+        hasDataWithinSampleRate('tws') ? latest.tws.value : null,
         latest.position?.value?.latitude);
-
-    if(readingStore.count() > 1) {
-        let json = barometerTrend.getForecast(isNorthernHemisphere());
-        return readingStore.count() > 1 ? map.mapProperties(json) : null;
-    } else {
-        return null;
-    }
 }
 
-function addPressure(datetime, pressure, altitude, temperature, humidity, twd, latitude) {
+/**
+ * 
+ * @returns Forecast
+ */
+function getForecast()
+{
+    return barometerTrend.getForecast(isNorthernHemisphere());
+}
+
+function addPressure(datetime, pressure, altitude, temperature, humidity, twd, tws, latitude) {
     barometerTrend.addPressure(datetime, pressure, {
         altitude: altitude,
         temperature: temperature,
         humidity: humidity,
         trueWindDirection: twd,
+        trueWindSpeed: tws,
         latitude: latitude
     });
 }
@@ -164,12 +173,17 @@ function clear() {
     setSampleRate(DEFAULT_SAMPLE_RATE);
 }
 
+function hasDataWithinSampleRate(propertyPath) {
+    const entry = propertyPath.split('.').reduce((obj, key) => obj?.[key], latest);
+    return entry?.time != null ? (Date.now() - entry.time) <= sampleRate : false;
+}
+
 function hasTWDWithinOneMinute() {
-    return latest.twd.time !== null ? (Date.now() - latest.twd.time) <= secondsToMilliseconds(60) : false;
+    return latest.twd.time !== null ? (Date.now() - latest.twd.time) <= sampleRate : false;
 }
 
 function hasPositionWithinOneMinute() {
-    return latest.position.time !== null ? (Date.now() - latest.position.time) <= secondsToMilliseconds(60) : false;
+    return latest.position.time !== null ? (Date.now() - latest.position.time) <= sampleRate : false;
 }
 
 function isNorthernHemisphere() {
@@ -201,20 +215,10 @@ function populate(populateCallback) {
             reading.meta.temperature,
             reading.meta.humidity,
             reading.meta.trueWindDirection,
+            reading.meta.trueWindSpeed,
             reading.meta.latitude);
     });
 }
-
-function JSONParser(content) {
-    if (!content) return null;
-    return JSON.parse(content, (key, value) => {
-        if (key == "datetime") {
-            return new Date(value);
-        } else {
-            return value;
-        }
-    })
-};
 
 module.exports = {
     SUBSCRIPTIONS,
@@ -224,10 +228,11 @@ module.exports = {
     onDeltasUpdate,
     clear,
     getLatest: () => latest,
+    sampleRate,
     setSampleRate,
     setAltitudeCorrection,
     persist,
     populate,
     getAll,
-    JSONParser
+    getForecast
 }
