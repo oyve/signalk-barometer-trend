@@ -1,17 +1,22 @@
 'use strict'
-const fs = require('fs');
 const meta = require('./meta.json');
-const schema = require('./schema.json');
+const schema = require('./schema');
 const barometer = require('./src/barometer');
 const globals = require('barometer-trend/src/globals');
+const map = require('./src/map');
+const persist = require('./src/persist');
 
 module.exports = function (app) {
     var plugin = { };
     let persistTimer = null;
+    let forecastUpdateTimer = null;
+    let forecastUpdateRate = null;
+    let allowPersist = false;
+    const storage = new persist(offlineFilePath());
 
     plugin.id = 'signalk-barometer-trend';
     plugin.name = 'Barometer Trend';
-    plugin.description = 'Calculate the pressure trend and other weather forecasts based on barometric pressure.';
+    plugin.description = 'Calculate pressure trends and weather forecasts using barometric pressure and atmospheric variables.';
 
     var unsubscribes = [];
     plugin.start = function (settings, restartPlugin) {
@@ -20,13 +25,23 @@ module.exports = function (app) {
         if (settings.generalSettingsSection !== undefined && settings.optionalSettingsSection !== undefined) {
             applySetting(
                 'Sample Rate',
-                settings.generalSettingsSection.rate,
+                settings.generalSettingsSection.sampleRate,
                 (value) => barometer.setSampleRate(value)
+            );
+            applySetting(
+                'Forecast Rate',
+                settings.generalSettingsSection.forecastUpdateRate,
+                (value) => setForecastUpdateRate(value) //to milliseconds
             );
             applySetting(
                 'Altitude Offset',
                 settings.generalSettingsSection.altitude,
                 (value) => barometer.setAltitudeCorrection(value)
+            );
+            applySetting(
+                'Save',
+                settings.optionalSettingsSection.save,
+                (value) => persist(value)
             );
             applySetting(
                 'Diurnal',
@@ -40,7 +55,7 @@ module.exports = function (app) {
             );
         }
 
-        barometer.populate(read);
+        barometer.populate(storage.read);
 
         let localSubscription = {
             context: '*',
@@ -55,23 +70,66 @@ module.exports = function (app) {
             },
             delta => sendDelta(barometer.onDeltasUpdate(delta))
         );
-
-        persistTimer = setInterval(function () {
-            barometer.persist(write);
-        }, 1000 * 60 * 3); //every 3 minutes        
     };
 
     plugin.stop = function () {
         app.debug('Plugin stopping');
         clearInterval(persistTimer);
-        barometer.persist(write);
+        clearInterval(forecastUpdateTimer);
+        
+        if(allowPersist) {
+            barometer.persist(storage.write);
+        }
 
         unsubscribes.forEach(f => f());
         unsubscribes = [];
         app.debug('Plugin stopped');
     };
 
-    plugin.schema = schema[0];
+    plugin.schema = schema.schema;
+    plugin.uiSchema = schema.uiSchema;
+
+    /**
+     * 
+     * @param {number} seconds Set forecast rate in seconds
+     */
+    function setForecastUpdateRate(seconds) {
+        try {
+            forecastUpdateRate = seconds * 1000;
+
+            clearInterval(forecastUpdateTimer);
+
+            forecastUpdateTimer = setInterval(function () {
+                const json = barometer.getForecast();
+                var deltaValues = map.mapProperties(json);
+                sendDelta(deltaValues);
+                app.debug(`Forecast Update Rate set to ${seconds} seconds`);
+            }, forecastUpdateRate);
+        } catch(error) {
+            app.error(`Failed to set Forecast Update Rate: ${error.message}`);
+        }
+    }
+
+    /**
+     * 
+     * @param {boolean} enable Enable/disable persist
+     */
+    function persist(enable) {
+        try {
+            allowPersist = enable;
+            if(allowPersist) {
+                persistTimer = setInterval(function () {
+                    barometer.persist(storage.write);
+                    app.debug(`Persist plugin data enabled`);
+                }, barometer.sampleRate); //as often as the sample rate
+            } else {
+                clearInterval(persistTimer);
+                app.debug(`Persist plugin data disabled`);
+            }
+        } catch(error) {
+            app.error(`Failed to ${enable ? 'enable' : 'disable'} Persist Plugin Data: ${error.message}`);
+        }
+    }
 
     function applySetting(settingName, settingValue, applyCallback) {
         if (settingValue === null || settingValue === '') {
@@ -106,55 +164,6 @@ module.exports = function (app) {
 
     function offlineFilePath() {
         return app.getDataDirPath() + "/offline.json";
-    }
-
-    function write(json) {
-        let content = JSON.stringify(json, null, 2);
-
-        fs.writeFile(offlineFilePath(), content, 'utf8', (err) => {
-            if (err) {
-                app.debug(err.stack);
-                app.error(err);
-                deleteOfflineFile(); //try delete as it may be corrupted
-            } else {
-                app.debug(`Wrote plugin data to file: ${offlineFilePath()}`);
-            }
-        });
-    }
-
-    function read() {
-        try {
-            const content = fs.readFileSync(offlineFilePath(), 'utf-8');
-            return !content ? null : barometer.JSONParser(content);
-        } catch (error) {
-            if (error.code === 'ENOENT') {
-                return [];
-            } else {
-                app.error(`Error reading file: ${error.message}`);
-                deleteOfflineFile();  //try delete as it may be corrupted
-
-                return [];
-            }
-        }
-    }
-
-    function deleteOfflineFile() {
-        try {
-            if(fs.existsSync(offlineFilePath())) {
-                app.debug(`Deleting file: ${offlineFilePath()}`);
-                fs.unlink(offlineFilePath(), (error) => {
-                    if (error) {
-                        app.error(`Error deleting file: ${error.message}`);
-                        return;
-                    }
-                    app.debug('File deleted successfully!');
-                });
-            }
-        }
-        catch (error) {
-            app.error(`Error deleting file: ${error.message}`);
-            return;
-        }
     }
 
     return plugin;
