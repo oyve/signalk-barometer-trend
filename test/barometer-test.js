@@ -261,7 +261,7 @@ describe("Barometer Tests", function () {
             assert.strictEqual(actual, expected);
         });
     });
-
+    
     describe("persist", function () {
         it("Persist should persist", function () {
             //arrange

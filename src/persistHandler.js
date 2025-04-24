@@ -1,8 +1,13 @@
 const fs = require('fs');
 
-class Persist {
-    constructor(path) {
-        this.path = path;
+class PersistHandler {
+    constructor(app) {
+        this.app = app;
+        this.path = app.getDataDirPath() + 'offline.json';;
+    }
+
+    fileExists() {
+        return fs.existsSync(this.path);
     }
 
     write(json) {
@@ -10,24 +15,28 @@ class Persist {
 
         fs.writeFile(this.path, content, 'utf8', (err) => {
             if (err) {
-                app.debug(err.stack);
-                app.error(err);
+                this.app.debug(err.stack);
+                this.app.error(err);
                 this.deleteOfflineFile(); //try delete as it may be corrupted
             } else {
-                app.debug(`Wrote plugin data to file: ${this.path()}`);
+                this.app.debug(`Wrote plugin data to file: ${this.path()}`);
             }
         });
     }
 
     read() {
         try {
-            const content = fs.readFileSync(this.path, 'utf-8');
-            return !content ? null : this.JSONParser(content);
+            if(this.fileExists()) {
+                const content = fs.readFileSync(this.path, 'utf-8');
+                return !content ? null : this.JSONParser(content);
+            } else {
+                return null;
+            }
         } catch (error) {
             if (error.code === 'ENOENT') {
                 return [];
             } else {
-                app.error(`Error reading file: ${error.message}`);
+                this.app.error(`Error reading file: ${error.message}`);
                 this.deleteOfflineFile();  //try delete as it may be corrupted
 
                 return [];
@@ -48,22 +57,22 @@ class Persist {
 
     deleteOfflineFile() {
         try {
-            if(fs.existsSync(this.path)) {
-                app.debug(`Deleting file: ${this.path}`);
+            if(this.fileExists()) {
+                this.app.debug(`Deleting file: ${this.path}`);
                 fs.unlink(this.path, (error) => {
                     if (error) {
-                        app.error(`Error deleting file: ${error.message}`);
+                        this.app.error(`Error deleting file: ${error.message}`);
                         return;
                     }
-                    app.debug('File deleted successfully!');
+                    this.app.debug('File deleted successfully!');
                 });
             }
         }
         catch (error) {
-            app.error(`Error deleting file: ${error.message}`);
+            this.app.error(`Error deleting file: ${error.message}`);
             return;
         }
     }
 }
 
-module.exports = Persist;
+module.exports = PersistHandler;

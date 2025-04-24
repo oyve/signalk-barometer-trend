@@ -4,7 +4,7 @@ const schema = require('./schema');
 const barometer = require('./src/barometer');
 const globals = require('barometer-trend/src/globals');
 const map = require('./src/map');
-const persist = require('./src/persist');
+const PersistHandler = require('./src/persistHandler');
 
 module.exports = function (app) {
     var plugin = { };
@@ -12,7 +12,7 @@ module.exports = function (app) {
     let forecastUpdateTimer = null;
     let forecastUpdateRate = null;
     let allowPersist = false;
-    const storage = new persist(offlineFilePath());
+    const storage = new PersistHandler(app);
 
     plugin.id = 'signalk-barometer-trend';
     plugin.name = 'Barometer Trend';
@@ -41,7 +41,7 @@ module.exports = function (app) {
             applySetting(
                 'Save',
                 settings.optionalSettingsSection.save,
-                (value) => persist(value)
+                (value) => togglePersist(value)
             );
             applySetting(
                 'Diurnal',
@@ -55,7 +55,7 @@ module.exports = function (app) {
             );
         }
 
-        barometer.populate(storage.read);
+        barometer.populate(storage.read.bind(storage));
 
         let localSubscription = {
             context: '*',
@@ -73,12 +73,13 @@ module.exports = function (app) {
     };
 
     plugin.stop = function () {
-        app.debug('Plugin stopping');
+        app.debug('Plugin stopping... cleaning up!');
         clearInterval(persistTimer);
         clearInterval(forecastUpdateTimer);
         
         if(allowPersist) {
-            barometer.persist(storage.write);
+            barometer.persist(storage.write.bind(storage));
+            app.debug('Saved latest Plugin data to offline storage');
         }
 
         unsubscribes.forEach(f => f());
@@ -112,22 +113,22 @@ module.exports = function (app) {
 
     /**
      * 
-     * @param {boolean} enable Enable/disable persist
+     * @param {boolean} isEnabled True or false
      */
-    function persist(enable) {
+    function togglePersist(isEnabled) {
         try {
-            allowPersist = enable;
+            allowPersist = isEnabled;
+            clearInterval(persistTimer);
+
             if(allowPersist) {
                 persistTimer = setInterval(function () {
-                    barometer.persist(storage.write);
-                    app.debug(`Persist plugin data enabled`);
+                    barometer.persist(storage.write.bind(storage));
                 }, barometer.sampleRate); //as often as the sample rate
-            } else {
-                clearInterval(persistTimer);
-                app.debug(`Persist plugin data disabled`);
             }
+
+            app.debug(`Save Plugin Data is ${allowPersist ? 'enabled' : 'disabled'} `);
         } catch(error) {
-            app.error(`Failed to ${enable ? 'enable' : 'disable'} Persist Plugin Data: ${error.message}`);
+            app.error(`Failed to ${isEnabled ? 'enable' : 'disable'} Save Plugin Data: ${error.message}`);
         }
     }
 
@@ -159,11 +160,7 @@ module.exports = function (app) {
             };
 
             app.handleMessage(plugin.id, signalk_delta);
-        }
-    }
-
-    function offlineFilePath() {
-        return app.getDataDirPath() + "/offline.json";
+        } 
     }
 
     return plugin;
