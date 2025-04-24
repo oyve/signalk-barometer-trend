@@ -17,7 +17,7 @@ const propertyMap = [
     { signalK: "environment.forecast.frontPrognose", src: (json) => validateProperty(json.models.front.prognose, NO_FRONT_DETECTED) },
     { signalK: "environment.forecast.frontWind", src: (json) => validateProperty(json.models.front.wind, NO_FRONT_DETECTED) },
 
-    { signalK: "environment.forecast.pressureSystem", src: (json) => validateProperty(json.models.system.name) },
+    { signalK: "environment.forecast.pressureSystem", src: (json) => validateProperty(json.models.pressureSystem.current.name) },
 
     { signalK: "environment.outside.pressureMinus01hr", src: (json) => history(json, 1) },
     { signalK: "environment.outside.pressureMinus03hr", src: (json) => history(json, 3) },
@@ -37,7 +37,6 @@ function mapProperties(json) {
     if(json === null || typeof json !== 'object') {
         throw new Error("Invalid JSON structure provided for mapping properties.");
     }
-
     const deltaUpdates = [];
     propertyMap.forEach((p) => {
         try {
@@ -97,6 +96,5 @@ function buildDeltaPath(path, value) {
 }
 
 module.exports = {
-    mapProperties,
-    buildDeltaPath
+    mapProperties
 };
