@@ -28,6 +28,9 @@ RUN mkdir -p ~/.signalk/node_modules
 RUN cp -r /app/signalk-barometer-trend ~/.signalk/node_modules/signalk-barometer-trend
 RUN cp -r /app/barometer-trend ~/.signalk/node_modules/barometer-trend
 RUN cp -r /app/signalk-barometer-trend/security.json ~/.signalk/
+RUN cp -r /app/signalk-barometer-trend/settings.json ~/.signalk/
+RUN mkdir -p ~/.signalk/plugin-config-data/
+RUN cp -r /app/signalk-barometer-trend/signalk-barometer-trend.json ~/.signalk/plugin-config-data/
 
 # Switch back to the signalk user
 #USER node
@@ -41,4 +44,8 @@ CMD ["node", "/app/signalk-server.js"]
 
 #run from parent folder of the two:
 #docker build -f signalk-barometer-trend/Dockerfile -t my-signalk-server .
-#docker run -it --rm --no-create-admin -v ~/.signalk:/home/signalk/.signalk -p 3000:3000 my-signalk-server --no-create-admin
+#docker run -it --rm -v ~/.signalk:/home/signalk/.signalk -p 3000:3000 -p 8375:8375 my-signalk-server
+#With DEBUG
+#docker run -it --rm -e DEBUG=signalk:* -v ~/.signalk:/home/signalk/.signalk -p 3000:3000 -p 8375:8375 my-signalk-server
+#docker run -it --rm -e DEBUG=signalk:*,signalk:interfaces:ws -v ~/.signalk:/home/signalk/.signalk -p 3000:3000 -p 8375:8375 my-signalk-server
+#-e DEBUG=signalk:*,signalk:interfaces:ws

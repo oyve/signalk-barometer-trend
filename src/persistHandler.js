@@ -3,31 +3,39 @@ const fs = require('fs');
 class PersistHandler {
     constructor(app) {
         this.app = app;
-        this.path = app.getDataDirPath() + 'offline.json';;
+        this.path = null;
     }
 
     fileExists() {
-        return fs.existsSync(this.path);
+        return fs.existsSync(this.getPath());
+    }
+
+    getPath() {
+        return this.path = this.path ?? (this.app.getDataDirPath() + '/offline.json');
     }
 
     write(json) {
-        let content = JSON.stringify(json, null, 2);
+        try {
+            let content = JSON.stringify(json, null, 2);
 
-        fs.writeFile(this.path, content, 'utf8', (err) => {
-            if (err) {
-                this.app.debug(err.stack);
-                this.app.error(err);
-                this.deleteOfflineFile(); //try delete as it may be corrupted
-            } else {
-                this.app.debug(`Wrote plugin data to file: ${this.path()}`);
-            }
-        });
+            fs.writeFile(this.getPath(), content, 'utf8', (error) => {
+                if (error) {
+                    this.app.debug(error.stack);
+                    this.app.error(error);
+                    this.deleteOfflineFile(); //try delete as it may be corrupted
+                } else {
+                    //this.app.debug(`Wrote plugin data to file: ${this.getPath()}`);
+                }
+            });
+        } catch(error) {
+            console.log("Failed to write json" + error);
+        }
     }
 
     read() {
         try {
             if(this.fileExists()) {
-                const content = fs.readFileSync(this.path, 'utf-8');
+                const content = fs.readFileSync(this.getPath(), 'utf-8');
                 return !content ? null : this.JSONParser(content);
             } else {
                 return null;
@@ -36,7 +44,7 @@ class PersistHandler {
             if (error.code === 'ENOENT') {
                 return [];
             } else {
-                this.app.error(`Error reading file: ${error.message}`);
+                this.app.error(`Error reading file: ${error}`);
                 this.deleteOfflineFile();  //try delete as it may be corrupted
 
                 return [];
@@ -45,21 +53,25 @@ class PersistHandler {
     }
 
     JSONParser(content) {
-        if (!content) return null;
-        return JSON.parse(content, (key, value) => {
-            if (key == "datetime") {
-                return new Date(value);
-            } else {
-                return value;
-            }
-        })
+        try {
+            if (!content) return null;
+            return JSON.parse(content, (key, value) => {
+                if (key == "datetime") {
+                    return new Date(value);
+                } else {
+                    return value;
+                }
+            })
+        } catch(error) {
+            console.log("Failed to parse JSON" + error);
+        }
     };
 
     deleteOfflineFile() {
         try {
             if(this.fileExists()) {
-                this.app.debug(`Deleting file: ${this.path}`);
-                fs.unlink(this.path, (error) => {
+                this.app.debug(`Deleting file: ${this.getPath()}`);
+                fs.unlink(this.getPath(), (error) => {
                     if (error) {
                         this.app.error(`Error deleting file: ${error.message}`);
                         return;

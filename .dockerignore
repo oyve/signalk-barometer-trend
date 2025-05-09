@@ -5,6 +5,8 @@ yarn-debug.log
 yarn-error.log
 pnpm-debug.log
 security.json
+settings.json
+signalk-barometer-trend.json
 
 # OS/system files
 .DS_Store

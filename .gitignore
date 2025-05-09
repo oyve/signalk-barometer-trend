@@ -7,7 +7,9 @@ yarn-error.log*
 lerna-debug.log*
 
 security.json
+settings.json
 offline.json
+signalk-barometer-trend.json
 
 # Diagnostic reports (https://nodejs.org/api/report.html)
 report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
