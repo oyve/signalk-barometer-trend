@@ -2,7 +2,7 @@
 const utils = require('./utils');
 
 const barometerTrend = require('barometer-trend');
-const readingStore = require('barometer-trend/src/readingStore');
+const { ReadingStore } = require('barometer-trend/readingStore');
 const lodash = require('lodash');
 
 const DEFAULT_SAMPLE_RATE = utils.minutesToMilliseconds(2);
@@ -12,7 +12,7 @@ let lastSentPressureReading = null;
 class Barometer {
     constructor() {
         this.trend = barometerTrend;
-        this.readingStore = readingStore;
+        this.readingStore = ReadingStore;
     }
 
     sampleRate = DEFAULT_SAMPLE_RATE; //default
@@ -189,7 +189,7 @@ class Barometer {
     }
 
     getAll() {
-        return this.readingStore.getAll();
+        return ReadingStore.getAll();
     }
 
     hasRecentPressureUpdate() {
