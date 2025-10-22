@@ -32,9 +32,9 @@ const mappings = [
     { signalKPath: `${basePath}.forecast.pressureAndWind`, src: (json) => setPropertyOrDefault(json.models.quadrant, "No wind data") },
     { signalKPath: `${basePath}.forecast.pressureAndSeason`, src: (json) => setPropertyOrDefault(json.models.season) },
 
-    // { signalKPath: `${basePath}.forecast.frontTendency`, src: (json) => setPropertyOrDefault(json.models.front.tendency) },
-    // { signalKPath: `${basePath}.forecast.frontPrognose`, src: (json) => setPropertyOrDefault(json.models.front.prognose) },
-    // { signalKPath: `${basePath}.forecast.frontWind`, src: (json) => setPropertyOrDefault(json.models.front.wind) },
+    { signalKPath: `${basePath}.forecast.frontTendency`, src: (json) => setPropertyOrDefault(json.models.front.tendency) },
+    { signalKPath: `${basePath}.forecast.frontPrognose`, src: (json) => setPropertyOrDefault(json.models.front.prognose) },
+    { signalKPath: `${basePath}.forecast.frontWind`, src: (json) => setPropertyOrDefault(json.models.front.wind) },
 
     { signalKPath: `${basePath}.forecast.pressureSystemCurrent`, src: (json) => setPropertyOrDefault(json.models.pressureSystem.current.name) },
     { signalKPath: `${basePath}.forecast.pressureSystemTrending`, src: (json) => setPropertyOrDefault(json.models.pressureSystem.trending.name) }
