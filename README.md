@@ -3,6 +3,12 @@
 # signalk-barometer-trend
 Analyzes and calculates the tendency and trend of barometer readings over a one or three hour period including barometric weather predictions. Is foul weather on the horizon?
 
+Barometric forecasts:
+- 0–6 hours: Most accurate (e.g. rising pressure = clearing weather).
+- 6–12 hours: Still reliable, especially when combined with other data.
+- 12–24 hours: Starts to lose precision.
+- Beyond 24 hours: Not dependable alone — needs satellite, radar, and models.
+
 ## Prerequisites
 - A barometer, i.e. the [bme280](https://www.google.com/search?client=firefox-b-d&q=bme280), outputting `'environment.outside.pressure'` to SignalK
 - Optional: GPS-coordinates to determinate if located in northern | southern hemisphere (default: northern)

@@ -2,34 +2,40 @@
 const assert = require('assert');
 const barometer = require('../src/barometer');
 const KELVIN = 273.15;
-const persist = require('../src/persist')
-const map = require('../src/map');
-
+const persist = require('../src/persistHandler')
+const deltaPathMapper = require('../src/deltaPathMapper');
+const deltaHandler = require('../src/deltaHandler');
 
 const storage = new persist();
 
 describe("Barometer Tests", function () {
-    describe("onDeltasUpdated", function () {
+
+    beforeEach(function () {
+        barometer.clear();
+    });
+
+    describe("handleIncomingDeltad", function () {
         it("Subscription should equal", function () {
             //arrange
             barometer.clear();
             let expected = 'environment.outside.pressure';
             //act
-            let actual = barometer.SUBSCRIPTIONS;
+            let actual = deltaHandler.SUBSCRIPTIONS;
             //assert
             assert.strictEqual(actual.find((f) => f.path === expected).path, expected);
         });
 
-        it("Pressure should equal", function () {
+        it("Pressure should equal", async function () {
             //arrange
             barometer.clear();
             const expectedTendency = "RISING";
             const expectedTrend = "STEADY";
-            barometer.onDeltasUpdate(createDeltaMockPressure(101500));
+            deltaHandler.handleIncomingDelta(createDeltaMockPressure(101500));
             //act
-            barometer.onDeltasUpdate(createDeltaMockPressure(101500 + 3));
+            await sleep(); // if not deltas might be eliminated as duplicates
+            deltaHandler.handleIncomingDelta(createDeltaMockPressure(101500 + 3));
             let json = barometer.getForecast();
-            let actual = map.mapProperties(json);
+            let actual = deltaPathMapper.mapJSON(json);
             //assert
             assert.strictEqual(actual.find((f) => f.path === getPressurePath("pressureTendency")).value, expectedTendency);
             assert.strictEqual(actual.find((f) => f.path === getPressurePath("pressureTrend")).value, expectedTrend);
@@ -41,7 +47,7 @@ describe("Barometer Tests", function () {
             barometer.clear();
             //act
             //assert
-            assert.throws(() => { barometer.onDeltasUpdate(null) }, Error, "Deltas cannot be null");
+            assert.throws(() => { deltaHandler.handleIncomingDelta(null) }, Error, "Deltas cannot be null");
         });
 
 
@@ -49,7 +55,7 @@ describe("Barometer Tests", function () {
             //arrange
             //act
             barometer.clear();
-            let actual = barometer.onDeltasUpdate(createDeltaMockPressure(300));
+            let actual = deltaHandler.handleIncomingDelta(createDeltaMockPressure(300));
             //assert
             assert.notStrictEqual(actual, null);
         });
@@ -69,86 +75,98 @@ describe("Barometer Tests", function () {
             barometer.clear();
             let expected = 'environment.outside.pressure';
             //act
-            let actual = barometer.SUBSCRIPTIONS;
+            let actual = deltaHandler.SUBSCRIPTIONS;
             //assert
             assert.strictEqual(actual.find((f) => f.path === expected).path, expected);
         });
 
-        it("Has position within one minute", function () {
+        it("Has position within one minute", async function () {
             //arrange
             barometer.clear();
-            barometer.onDeltasUpdate(createDeltaMockPosition(mockPositionNorthernHemisphere()));
+            deltaHandler.handleIncomingDelta(createDeltaMockPosition(mockPositionNorthernHemisphere()));
 
-            barometer.onDeltasUpdate(createDeltaMockPressure(101500));
-            barometer.onDeltasUpdate(createDeltaMockPressure(101600));
-            barometer.onDeltasUpdate(createDeltaMockPressure(101700));
+            deltaHandler.handleIncomingDelta(createDeltaMockPressure(101500));
+            await sleep(); // if not deltas might be eliminated as duplicates
+            deltaHandler.handleIncomingDelta(createDeltaMockPressure(101600));
+            await sleep(); // if not deltas might be eliminated as duplicates
+            deltaHandler.handleIncomingDelta(createDeltaMockPressure(101700));
             //act
             let actual = barometer.hasPositionWithinOneMinute();
             //assert
             assert.strictEqual(actual, true);
         });
 
-        it("Has no position defaults to northern hemisphere", function () {
+        it("Has no position defaults to northern hemisphere", async function () {
             //arrange
             barometer.clear();
-            barometer.onDeltasUpdate(createDeltaMockPressure(101500));
-            barometer.onDeltasUpdate(createDeltaMockPressure(101600));
-            barometer.onDeltasUpdate(createDeltaMockPressure(101700));
+            deltaHandler.handleIncomingDelta(createDeltaMockPressure(101500));
+            await sleep(); // if not deltas might be eliminated as duplicates
+            deltaHandler.handleIncomingDelta(createDeltaMockPressure(101600));
+            await sleep(); // if not deltas might be eliminated as duplicates
+            deltaHandler.handleIncomingDelta(createDeltaMockPressure(101700));
             //act
-            let actual = barometer.isNortherHemisphere();
+            let actual = barometer.isNorthernHemisphere();
             //assert
             assert.strictEqual(actual, true);
         });
 
-        it("Is northern hemisphere", function () {
+        it("Is northern hemisphere", async function () {
             //arrange
             barometer.clear();
-            barometer.onDeltasUpdate(createDeltaMockPosition(mockPositionNorthernHemisphere()));
+            deltaHandler.handleIncomingDelta(createDeltaMockPosition(mockPositionNorthernHemisphere()));
 
-            barometer.onDeltasUpdate(createDeltaMockPressure(101500));
-            barometer.onDeltasUpdate(createDeltaMockPressure(101600));
-            barometer.onDeltasUpdate(createDeltaMockPressure(101700));
+            deltaHandler.handleIncomingDelta(createDeltaMockPressure(101500));
+            await sleep(); // if not deltas might be eliminated as duplicates
+            deltaHandler.handleIncomingDelta(createDeltaMockPressure(101600));
+            await sleep(); // if not deltas might be eliminated as duplicates
+            deltaHandler.handleIncomingDelta(createDeltaMockPressure(101700));
             //act
-            let actual = barometer.isNortherHemisphere();
+            let actual = barometer.isNorthernHemisphere();
             //assert
             assert.strictEqual(actual, true);
         });
 
-        it("Is southern hemisphere", function () {
+        it("Is southern hemisphere", async function () {
             //arrange
             barometer.clear();
-            barometer.onDeltasUpdate(createDeltaMockPosition(mockPositionSouthernHemisphere()));
+            deltaHandler.handleIncomingDelta(createDeltaMockPosition(mockPositionSouthernHemisphere()));
 
-            barometer.onDeltasUpdate(createDeltaMockPressure(101500));
-            barometer.onDeltasUpdate(createDeltaMockPressure(101600));
-            barometer.onDeltasUpdate(createDeltaMockPressure(101700));
+            deltaHandler.handleIncomingDelta(createDeltaMockPressure(101500));
+            await sleep(); // if not deltas might be eliminated as duplicates
+            deltaHandler.handleIncomingDelta(createDeltaMockPressure(101600))
+            await sleep(); // if not deltas might be eliminated as duplicates;
+            deltaHandler.handleIncomingDelta(createDeltaMockPressure(101700));
             //act
-            let actual = barometer.isNortherHemisphere();
+            let actual = barometer.isNorthernHemisphere();
             //assert
             assert.strictEqual(actual, false);
         });
 
-        it("Has TWD within one minute", function () {
+        it("Has TWD within one minute", async function () {
             //arrange
             barometer.clear();
-            barometer.onDeltasUpdate(createDeltaMockWindDirection(225));
+            deltaHandler.handleIncomingDelta(createDeltaMockWindDirection(225));
 
-            barometer.onDeltasUpdate(createDeltaMockPressure(101500));
-            barometer.onDeltasUpdate(createDeltaMockPressure(101600));
-            barometer.onDeltasUpdate(createDeltaMockPressure(101700));
+            deltaHandler.handleIncomingDelta(createDeltaMockPressure(101500));
+            await sleep(); // if not deltas might be eliminated as duplicates
+            deltaHandler.handleIncomingDelta(createDeltaMockPressure(101600));
+            await sleep(); // if not deltas might be eliminated as duplicates
+            deltaHandler.handleIncomingDelta(createDeltaMockPressure(101700));
             //act
             let actual = barometer.hasTWDWithinOneMinute();
             //assert
             assert.strictEqual(actual, true);
         });
 
-        it("Has not TWD within one minute", function () {
+        it("Has not TWD within one minute", async function () {
             //arrange
             barometer.clear();
 
-            barometer.onDeltasUpdate(createDeltaMockPressure(101500));
-            barometer.onDeltasUpdate(createDeltaMockPressure(101600));
-            barometer.onDeltasUpdate(createDeltaMockPressure(101700));
+            deltaHandler.handleIncomingDelta(createDeltaMockPressure(101500));
+            await sleep(); // if not deltas might be eliminated as duplicates
+            deltaHandler.handleIncomingDelta(createDeltaMockPressure(101600));
+            await sleep(); // if not deltas might be eliminated as duplicates
+            deltaHandler.handleIncomingDelta(createDeltaMockPressure(101700));
             //act
             let actual = barometer.hasTWDWithinOneMinute();
             //assert
@@ -160,7 +178,7 @@ describe("Barometer Tests", function () {
             const expected = 30 + KELVIN;
             barometer.clear();
             //act
-            barometer.onDeltasUpdate(createDeltaMockTemperature(expected));
+            deltaHandler.handleIncomingDelta(createDeltaMockTemperature(expected));
             //assert
             assert.strictEqual(barometer.getLatest().temperature.value, expected);
         });
@@ -170,26 +188,38 @@ describe("Barometer Tests", function () {
             const expected = 100;
             barometer.clear();
             //act
-            barometer.onDeltasUpdate(createDeltaMockAltitude(expected));
+            deltaHandler.handleIncomingDelta(createDeltaMockAltitude(expected));
             //assert
             assert.strictEqual(barometer.getLatest().altitude.value, expected);
+        });
+
+        it("Has offset", function () {
+            //arrange
+            const expected = 4;
+            barometer.clear();
+            //act
+            barometer.setAltitudeOffset(4);
+            //assert
+            assert.strictEqual(barometer.getLatest().altitude.offset, expected);
         });
     });
 
     describe("System Tests", function () {
-		it("System is correct", function () {
+		it("System is correct", async function () {
 			//arrange
 			barometer.clear();
 			const expected = "Normal";
-			barometer.onDeltasUpdate(createDeltaMockPressure(101549));
+			deltaHandler.handleIncomingDelta(createDeltaMockPressure(101549));
 			//act
-			barometer.onDeltasUpdate(createDeltaMockPressure(101500));
+            await sleep(); // if not deltas will be eliminated as duplicates
+			deltaHandler.handleIncomingDelta(createDeltaMockPressure(101500));
+            
 			let json = barometer.getForecast();
-			let actual = map.mapProperties(json);
+            assert.notStrictEqual(json, null);
+			let actual = deltaPathMapper.mapJSON(json);
 
 			//assert
-			assert.strictEqual(actual.find((f) => f.path === getForecastPath("pressureSystem")).value, expected);
-
+			assert.strictEqual(actual.find((f) => f.path === getForecastPath("pressureSystemCurrent")).value, expected);
 		});
 	});
 
@@ -229,9 +259,9 @@ describe("Barometer Tests", function () {
             barometer.clear();
             let expected = 104;
             //act
-            barometer.setAltitudeCorrection(4);
-            barometer.onDeltasUpdate(createDeltaMockAltitude(100));
-            let actual = barometer.getLatest().altitude.value;
+            barometer.setAltitudeOffset(4);
+            deltaHandler.handleIncomingDelta(createDeltaMockAltitude(100));
+            let actual = barometer.getCalculatedAltitude();
             //assert
             assert.strictEqual(actual, expected);
         });
@@ -241,9 +271,9 @@ describe("Barometer Tests", function () {
             barometer.clear();
             let expected = 96;
             //act
-            barometer.setAltitudeCorrection(-4);
-            barometer.onDeltasUpdate(createDeltaMockAltitude(100));
-            let actual = barometer.getLatest().altitude.value;
+            barometer.setAltitudeOffset(-4);
+            deltaHandler.handleIncomingDelta(createDeltaMockAltitude(100));
+            let actual = barometer.getCalculatedAltitude();
             //assert
             assert.strictEqual(actual, expected);
         });
@@ -253,22 +283,24 @@ describe("Barometer Tests", function () {
             barometer.clear();
             let expected = 100;
             //act
-            barometer.setAltitudeCorrection(null);
-            barometer.setAltitudeCorrection(undefined);
-            barometer.onDeltasUpdate(createDeltaMockAltitude(100));
-            let actual = barometer.getLatest().altitude.value;
+            barometer.setAltitudeOffset(null);
+            barometer.setAltitudeOffset(undefined);
+            deltaHandler.handleIncomingDelta(createDeltaMockAltitude(100));
+            let actual = barometer.getCalculatedAltitude();
             //assert
             assert.strictEqual(actual, expected);
         });
     });
-
+    
     describe("persist", function () {
-        it("Persist should persist", function () {
+        it("Persist should persist", async function () {
             //arrange
             barometer.clear();
-            barometer.onDeltasUpdate(createDeltaMockPressure(101500));
-            barometer.onDeltasUpdate(createDeltaMockPressure(101600));
-            barometer.onDeltasUpdate(createDeltaMockPressure(101700));
+            deltaHandler.handleIncomingDelta(createDeltaMockPressure(101500));
+            await sleep(); // if not deltas might be eliminated as duplicates
+            deltaHandler.handleIncomingDelta(createDeltaMockPressure(101600));
+            await sleep(); // if not deltas might be eliminated as duplicates
+            deltaHandler.handleIncomingDelta(createDeltaMockPressure(101700));
 
             const all = barometer.getAll();
 
@@ -284,12 +316,14 @@ describe("Barometer Tests", function () {
     });
 
     describe("populate", function () {
-        it("Populate should populate", function () {
+        it("Populate should populate", async function () {
             //arrange
             barometer.clear();
-            barometer.onDeltasUpdate(createDeltaMockPressure(101500));
-            barometer.onDeltasUpdate(createDeltaMockPressure(101600));
-            barometer.onDeltasUpdate(createDeltaMockPressure(101700));
+            deltaHandler.handleIncomingDelta(createDeltaMockPressure(101500));
+            await sleep(); // if not deltas might be eliminated as duplicates
+            deltaHandler.handleIncomingDelta(createDeltaMockPressure(101600));
+            await sleep(); // if not deltas might be eliminated as duplicates
+            deltaHandler.handleIncomingDelta(createDeltaMockPressure(101700));
 
             const all = barometer.getAll();
 
@@ -304,7 +338,7 @@ describe("Barometer Tests", function () {
             const actual = barometer.getAll();
 
             //assert
-            assert.deepEqual(actual, all);
+            assert.strictEqual(JSON.stringify(actual), JSON.stringify(all));
         });
 
         it("Populate should not fail with empty array", function () {
@@ -337,12 +371,14 @@ describe("Barometer Tests", function () {
             assert.ok(true);
         });
 
-        it("Parse date into date objecft", function () {
+        it("Parse date into date objecft", async function () {
             //arrange
             barometer.clear();
-            barometer.onDeltasUpdate(createDeltaMockPressure(101500));
-            barometer.onDeltasUpdate(createDeltaMockPressure(101600));
-            barometer.onDeltasUpdate(createDeltaMockPressure(101700));
+            deltaHandler.handleIncomingDelta(createDeltaMockPressure(101500));
+            await sleep(); // if not deltas might be eliminated as duplicates
+            deltaHandler.handleIncomingDelta(createDeltaMockPressure(101600));
+            await sleep(); // if not deltas might be eliminated as duplicates
+            deltaHandler.handleIncomingDelta(createDeltaMockPressure(101700));
 
             const content = JSON.stringify(barometer.getAll());
 
@@ -359,17 +395,22 @@ describe("Barometer Tests", function () {
     });
 });
 
+function sleep(ms = 30) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 function getPressurePath(path) {
-    return "environment.outside." + path;
+    return "environment.barometer." + path;
 }
 function getForecastPath(path) {
-    return "environment.forecast." + path;
+    return "environment.barometer.forecast." + path;
 }
 
 function createUpdateMock(path, value) {
     return {
         updates: [
             {
+                timestamp: new Date().toISOString(),
                 values: [
                     {
                         path: path,
