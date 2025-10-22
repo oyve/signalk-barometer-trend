@@ -36,6 +36,8 @@ function buildClearRaiseAlertMessage() {
 }
 
 function handleIncomingDelta(delta) {
+    if(!delta) throw new Error("Invalid delta: null");
+    
     try {
         if(delta && delta.updates) {
             let delta_updates = processDeltaUpdate(delta)
