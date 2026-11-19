@@ -224,9 +224,13 @@ class Barometer {
             const unique = Array.from(new Map(
                 barometerData.map(reading => [new Date(reading.datetime).getTime(), reading])
             ).values()).sort((a, b) => new Date(a.datetime) - new Date(b.datetime));
-            unique.forEach(({ datetime, pressure, meta }) => {
+            unique.forEach(({ datetime, pressure, value, meta }) => {
+                // Older persisted histories used `value` for the pressure field.
+                // Accept that format during restore so a legacy file does not
+                // produce one validation error per stored reading.
+                const restoredPressure = pressure ?? value;
                 const { altitude, temperature, humidity, trueWindDirection, trueWindSpeed, latitude } = meta || {};
-                this.addPressure(datetime, pressure, altitude, temperature, humidity, trueWindDirection, trueWindSpeed, latitude);
+                this.addPressure(datetime, restoredPressure, altitude, temperature, humidity, trueWindDirection, trueWindSpeed, latitude);
             });
         } catch(error) {
             console.error("Failed to populate data:" + error);
