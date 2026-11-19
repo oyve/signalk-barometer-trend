@@ -84,11 +84,11 @@ module.exports = function (app) {
                         sendToSignalK(deltaMessage);
                         app.error(`No environment.outside.pressure update for ${barometer.sampleRate/60000} minutes.`);
                         isAlarmRaised = true;
-                    } else {
+                    } else if (isAlarmRaised) {
                         let message = deltaHandler.buildClearRaiseAlertMessage();
                         app.handleMessage(plugin.id, message);
                         isAlarmRaised = false;
-                        app.error(`Cleared notification for environment.outside.pressure.`);
+                        app.debug(`Cleared notification for environment.outside.pressure.`);
                     }
                 } catch(error) {
                     app.error(`Failed build/clear raise alert message: ${error}`);
