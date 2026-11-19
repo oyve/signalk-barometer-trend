@@ -9,6 +9,8 @@
   "type": "commonjs",
   "files": [
     "index.js",
+    "src",
+    "schema.js",
     "assets",
     "LICENSE"
   ],
@@ -42,11 +44,14 @@
   },
   "homepage": "https://github.com/oyve/signalk-barometer-trend#readme",
   "dependencies": {
-    "barometer-trend": "^2.2.5",
+    "barometer-trend": "^2.2.8",
     "lodash": "^4.17.21",
     "regression": "^2.0.1"
   },
   "devDependencies": {
     "mocha": "^10.1.0"
-  }
+  },
+  "bundledDependencies": [
+    "barometer-trend"
+  ]
 }

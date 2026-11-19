@@ -341,6 +341,26 @@ describe("Barometer Tests", function () {
             assert.strictEqual(JSON.stringify(actual), JSON.stringify(all));
         });
 
+        it("Populate should restore legacy value histories as pressure", function () {
+            barometer.clear();
+            const datetime = new Date();
+
+            barometer.populate(() => [{ datetime, value: 101500, meta: {} }]);
+
+            assert.strictEqual(barometer.getAll().length, 1);
+            assert.strictEqual(barometer.getAll()[0].pressure, 101500);
+        });
+
+        it("Populate should deduplicate legacy timestamps", function () {
+            barometer.clear();
+            const datetime = new Date();
+            const reading = { datetime, pressure: 101500, meta: {} };
+
+            barometer.populate(() => [reading, reading, reading]);
+
+            assert.strictEqual(barometer.getAll().length, 1);
+        });
+
         it("Populate should not fail with empty array", function () {
             //arrange
             barometer.clear();
